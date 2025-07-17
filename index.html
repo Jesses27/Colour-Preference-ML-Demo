@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Colour Preference Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Neural Network Colour Preference Demo</h1>
+            <p>Train a neural network to learn your color preferences!</p>
+        </header>
+
+        <main>
+            <!-- Training Phase -->
+            <section id="training-phase" class="phase active">
+                <h2>🎯 Training Phase</h2>
+                <p>Click on your preferred color. The neural network will learn from your choices.</p>
+                
+                <div class="color-options">
+                    <div class="color-option" id="color1">
+                        <div class="color-display"></div>
+                        <button class="prefer-btn">I prefer this</button>
+                    </div>
+                    <div class="color-option" id="color2">
+                        <div class="color-display"></div>
+                        <button class="prefer-btn">I prefer this</button>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <span class="label">Training Examples:</span>
+                        <span id="training-count">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Current Loss:</span>
+                        <span id="current-loss">-</span>
+                    </div>
+                </div>
+
+                <button id="start-inference" class="btn btn-primary" disabled>
+                    Start Prediction Mode
+                </button>
+            </section>
+
+            <!-- Inference Phase -->
+            <section id="inference-phase" class="phase">
+                <h2>🔮 Prediction Mode</h2>
+                <p>The neural network will predict which color you prefer!</p>
+                
+                <div class="color-options">
+                    <div class="color-option" id="pred-color1">
+                        <div class="color-display"></div>
+                        <div class="prediction-bar">
+                            <div class="prediction-fill" id="pred1-fill"></div>
+                        </div>
+                        <span class="prediction-text" id="pred1-text">-</span>
+                    </div>
+                    <div class="color-option" id="pred-color2">
+                        <div class="color-display"></div>
+                        <div class="prediction-bar">
+                            <div class="prediction-fill" id="pred2-fill"></div>
+                        </div>
+                        <span class="prediction-text" id="pred2-text">-</span>
+                    </div>
+                </div>
+
+                <div class="feedback">
+                    <p>Was the prediction correct?</p>
+                    <button class="btn btn-success" id="correct-btn">✅ Correct</button>
+                    <button class="btn btn-danger" id="incorrect-btn">❌ Incorrect</button>
+                </div>
+
+                <button id="back-to-training" class="btn btn-secondary">
+                    Back to Training
+                </button>
+            </section>
+
+            <!-- Network Visualization -->
+            <section class="visualization">
+                <h3>🧠 Network Weights</h3>
+                <div class="weight-display">
+                    <canvas id="weight-canvas" width="300" height="200"></canvas>
+                </div>
+                <div class="network-info">
+                    <span id="network-status">Initializing...</span>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Built with TensorFlow.js • <a href="https://github.com/your-username/colour-preference-demo" target="_blank">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 
