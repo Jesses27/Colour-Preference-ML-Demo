@@ -81,19 +81,16 @@ colour-preference-demo/
 3. Set source to `main` and `/ (root)`.
 4. Visit `https://your-username.github.io/colour-preference-demo/`
 
-### Netlify
-1. Sign in at [netlify.com](https://www.netlify.com/).
-2. Connect GitHub repo.
-3. Deploy site.
+
 
 ---
 
 ## 💡 Future Enhancements
 - Add 2D visualization of decision boundary.
 - Support more than two colour options.
-- Save user session to localStorage.
+
 
 ---
 
 ## 📖 License
-MIT License © 2025 Your Name 
+MIT License © 2025 
