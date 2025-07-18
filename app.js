@@ -235,16 +235,14 @@ class ColorPreferenceNN {
         const switcher = document.getElementById('model-switcher');
         if (!switcher) return;
         
-        const labels = switcher.querySelectorAll('.model-label');
-        labels.forEach((label, index) => {
-            if (index === 0) { // Neural Network
-                label.style.color = this.useAlternativeModel ? '#666' : '#007bff';
-                label.style.fontWeight = this.useAlternativeModel ? 'normal' : 'bold';
-            } else { // Rule-Based
-                label.style.color = this.useAlternativeModel ? '#007bff' : '#666';
-                label.style.fontWeight = this.useAlternativeModel ? 'bold' : 'normal';
-            }
-        });
+        // Update the checked state of radio buttons
+        const neuralRadio = document.getElementById('neural-radio');
+        const ruleRadio = document.getElementById('rule-radio');
+        
+        if (neuralRadio && ruleRadio) {
+            neuralRadio.checked = !this.useAlternativeModel;
+            ruleRadio.checked = this.useAlternativeModel;
+        }
     }
 
     initModelSwitcher() {
@@ -299,17 +297,8 @@ class ColorPreferenceNN {
                 // Generate new colors
                 this.generateNewColors();
                 
-                // Add visual feedback to the switcher
-                const labels = switcher.querySelectorAll('.model-label');
-                labels.forEach((label, index) => {
-                    if (index === 0) { // Neural Network
-                        label.style.color = this.useAlternativeModel ? '#666' : '#007bff';
-                        label.style.fontWeight = this.useAlternativeModel ? 'normal' : 'bold';
-                    } else { // Rule-Based
-                        label.style.color = this.useAlternativeModel ? '#007bff' : '#666';
-                        label.style.fontWeight = this.useAlternativeModel ? 'bold' : 'normal';
-                    }
-                });
+                // Update visual feedback - the CSS will handle the styling based on radio button state
+                this.updateModelSwitcherVisualState();
                 
                 console.log('Model switch complete');
             });

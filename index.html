@@ -14,12 +14,12 @@
             <p>Train a neural network to learn your color preferences!</p>
             <div id="model-switcher" class="model-switcher">
                 <div class="model-switch">
-                    <label class="model-option">
-                        <input type="radio" name="model" value="neural" checked>
+                    <input type="radio" name="model" value="neural" id="neural-radio" checked>
+                    <label class="model-option" for="neural-radio">
                         <span class="model-label">🧠 Neural Network</span>
                     </label>
-                    <label class="model-option">
-                        <input type="radio" name="model" value="rule">
+                    <input type="radio" name="model" value="rule" id="rule-radio">
+                    <label class="model-option" for="rule-radio">
                         <span class="model-label">📊 Rule-Based (HSV)</span>
                     </label>
                 </div>

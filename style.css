@@ -53,6 +53,11 @@ header p {
     justify-content: center;
     gap: 25px;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+.model-switch input[type="radio"] {
+    display: none;
 }
 
 .model-switch label {
@@ -75,13 +80,13 @@ header p {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.model-switch input[type="radio"] {
-    margin: 0;
-    accent-color: #007bff;
-    transform: scale(1.2);
+.model-switch input[type="radio"]:checked + label {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: #007bff;
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
 }
 
-.model-switch input[type="radio"]:checked + span {
+.model-switch input[type="radio"]:checked + label .model-label {
     color: #007bff;
     font-weight: 700;
     text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
