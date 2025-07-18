@@ -218,45 +218,63 @@ class ColorPreferenceNN {
         // Initialize canvas for weight visualization
         this.initWeightVisualization();
         
-        // Add model switcher if not already present
-        this.addModelSwitcher();
+        // Initialize model switcher
+        this.initModelSwitcher();
         
         // Initialize explanation system
         this.initExplanationSystem();
+        
+        console.log('UI initialized, useAlternativeModel:', this.useAlternativeModel);
+        
+        // Set initial visual state of model switcher
+        this.updateModelSwitcherVisualState();
     }
 
-    addModelSwitcher() {
-        // Check if switcher already exists
-        if (document.getElementById('model-switcher')) return;
+    updateModelSwitcherVisualState() {
+        const switcher = document.getElementById('model-switcher');
+        if (!switcher) return;
         
-        // Add switcher after the header description
-        const header = document.querySelector('header');
-        const description = header.querySelector('p');
-        const switcher = document.createElement('div');
-        switcher.id = 'model-switcher';
-        switcher.className = 'model-switcher';
-        switcher.innerHTML = `
-            <div class="model-switch">
-                <label class="model-option">
-                    <input type="radio" name="model" value="neural" checked>
-                    <span class="model-label">🧠 Neural Network</span>
-                </label>
-                <label class="model-option">
-                    <input type="radio" name="model" value="rule">
-                    <span class="model-label">📊 Rule-Based (HSV)</span>
-                </label>
-            </div>
-        `;
+        const labels = switcher.querySelectorAll('.model-label');
+        labels.forEach((label, index) => {
+            if (index === 0) { // Neural Network
+                label.style.color = this.useAlternativeModel ? '#666' : '#007bff';
+                label.style.fontWeight = this.useAlternativeModel ? 'normal' : 'bold';
+            } else { // Rule-Based
+                label.style.color = this.useAlternativeModel ? '#007bff' : '#666';
+                label.style.fontWeight = this.useAlternativeModel ? 'bold' : 'normal';
+            }
+        });
+    }
+
+    initModelSwitcher() {
+        const switcher = document.getElementById('model-switcher');
+        if (!switcher) {
+            console.error('Model switcher not found in DOM');
+            return;
+        }
         
-        // Insert after the description
-        header.insertBefore(switcher, description.nextSibling);
+        console.log('Model switcher found in DOM');
         
         // Add event listeners
         const radios = switcher.querySelectorAll('input[type="radio"]');
-        radios.forEach(radio => {
+        console.log('Found radios:', radios.length);
+        
+        radios.forEach((radio, index) => {
+            console.log(`Adding listener to radio ${index}:`, radio.value);
             radio.addEventListener('change', (e) => {
+                console.log('Radio changed:', e.target.value);
                 this.useAlternativeModel = e.target.value === 'rule';
+                console.log('useAlternativeModel set to:', this.useAlternativeModel);
+                
                 this.updateNetworkStatus(`Switched to ${this.useAlternativeModel ? 'Rule-Based (HSV)' : 'Neural Network'} model`);
+                
+                // Update header to show current model
+                const header = document.querySelector('header h1');
+                if (header) {
+                    header.innerHTML = this.useAlternativeModel ? 
+                        '📊 Rule-Based (HSV) Colour Preference Demo' : 
+                        '🧠 Neural Network Colour Preference Demo';
+                }
                 
                 // Add model switch explanation
                 this.addExplanation('interactions', 'model_switched', 'interaction');
@@ -279,6 +297,20 @@ class ColorPreferenceNN {
                 
                 // Generate new colors
                 this.generateNewColors();
+                
+                // Add visual feedback to the switcher
+                const labels = switcher.querySelectorAll('.model-label');
+                labels.forEach((label, index) => {
+                    if (index === 0) { // Neural Network
+                        label.style.color = this.useAlternativeModel ? '#666' : '#007bff';
+                        label.style.fontWeight = this.useAlternativeModel ? 'normal' : 'bold';
+                    } else { // Rule-Based
+                        label.style.color = this.useAlternativeModel ? '#007bff' : '#666';
+                        label.style.fontWeight = this.useAlternativeModel ? 'bold' : 'normal';
+                    }
+                });
+                
+                console.log('Model switch complete');
             });
         });
     }
@@ -433,8 +465,8 @@ class ColorPreferenceNN {
         
         const content = document.querySelector('.explanation-content');
         if (content) {
-            // Add to the beginning (which will appear at top due to flex-direction: column-reverse)
-            content.insertBefore(bubble, content.firstChild);
+            // Add to the end (which will appear at bottom in normal column direction)
+            content.appendChild(bubble);
             
             // Add to history
             this.explanationHistory.push({ category, key, type });
@@ -444,8 +476,8 @@ class ColorPreferenceNN {
                 this.removeOldestExplanation();
             }
             
-            // Scroll to show new explanation (top in reversed flex)
-            content.scrollTop = 0;
+            // Scroll to show new explanation (bottom in normal flex)
+            content.scrollTop = content.scrollHeight;
         }
     }
 
@@ -477,8 +509,8 @@ class ColorPreferenceNN {
     removeOldestExplanation() {
         const content = document.querySelector('.explanation-content');
         if (content && content.children.length > 1) { // Keep at least the welcome message
-            // Remove the last child (oldest in reversed flex)
-            content.removeChild(content.lastChild);
+            // Remove the first child (oldest in normal flex)
+            content.removeChild(content.firstChild);
             this.explanationHistory.shift();
         }
     }
@@ -490,7 +522,7 @@ class ColorPreferenceNN {
             const welcomeBubble = content.querySelector('.explanation-bubble.welcome');
             content.innerHTML = '';
             if (welcomeBubble) {
-                content.insertBefore(welcomeBubble, content.firstChild);
+                content.appendChild(welcomeBubble);
             }
             this.explanationHistory = [];
         }

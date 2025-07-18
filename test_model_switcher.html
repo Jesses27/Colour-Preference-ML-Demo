@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Switcher Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .model-switcher {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        .model-switch {
+            display: flex;
+            gap: 20px;
+        }
+        .model-switch label {
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .model-switch input[type="radio"] {
+            margin-right: 8px;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4fd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Model Switcher Test</h1>
+    
+    <div id="model-switcher" class="model-switcher">
+        <div class="model-switch">
+            <label class="model-option">
+                <input type="radio" name="model" value="neural" checked>
+                <span class="model-label">🧠 Neural Network</span>
+            </label>
+            <label class="model-option">
+                <input type="radio" name="model" value="rule">
+                <span class="model-label">📊 Rule-Based (HSV)</span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="status" id="status">
+        Current model: Neural Network
+    </div>
+    
+    <script>
+        const switcher = document.getElementById('model-switcher');
+        const status = document.getElementById('status');
+        const radios = switcher.querySelectorAll('input[type="radio"]');
+        
+        radios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const model = e.target.value === 'rule' ? 'Rule-Based (HSV)' : 'Neural Network';
+                status.textContent = `Current model: ${model}`;
+                console.log('Model switched to:', model);
+            });
+        });
+        
+        console.log('Test page loaded');
+    </script>
+</body>
+</html> 
