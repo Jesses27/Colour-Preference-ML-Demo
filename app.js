@@ -5,8 +5,12 @@ class ColorPreferenceNN {
         this.trainingData = [];
         this.trainingCount = 0;
         this.currentLoss = 0;
+        this.currentAccuracy = 0;
         this.isTraining = false;
         this.minTrainingExamples = 5;
+        this.previousWeights = null;
+        this.weightHistory = [];
+        this.trainingHistory = [];
         
         this.init();
     }
@@ -136,6 +140,9 @@ class ColorPreferenceNN {
         
         this.isTraining = true;
         
+        // Store previous weights for analysis
+        this.previousWeights = this.getWeights();
+        
         // Get the preferred and non-preferred colors
         const preferredColor = this.currentColors[preferredIndex];
         const nonPreferredColor = this.currentColors[1 - preferredIndex];
@@ -162,9 +169,19 @@ class ColorPreferenceNN {
             // Update training stats
             this.trainingCount += 2;
             this.currentLoss = (history.history.loss[0] + history2.history.loss[0]) / 2;
+            this.currentAccuracy = (history.history.acc[0] + history2.history.acc[0]) / 2;
+            
+            // Store training history
+            this.trainingHistory.push({
+                loss: this.currentLoss,
+                accuracy: this.currentAccuracy,
+                step: this.trainingCount
+            });
             
             this.updateStats();
+            this.updateWeightTable();
             this.updateWeightVisualization();
+            this.updateTrainingInsights();
             
             // Enable inference mode after minimum training examples
             if (this.trainingCount >= this.minTrainingExamples * 2) {
@@ -184,6 +201,132 @@ class ColorPreferenceNN {
     updateStats() {
         document.getElementById('training-count').textContent = this.trainingCount;
         document.getElementById('current-loss').textContent = this.currentLoss.toFixed(4);
+        document.getElementById('current-accuracy').textContent = (this.currentAccuracy * 100).toFixed(1) + '%';
+    }
+
+    getWeights() {
+        if (!this.model) return null;
+        
+        const weights = this.model.layers[0].getWeights()[0];
+        return weights.dataSync();
+    }
+
+    updateWeightTable() {
+        const weights = this.getWeights();
+        if (!weights) return;
+        
+        // Update weight table
+        for (let i = 0; i < 8; i++) {
+            const redWeight = weights[i];
+            const greenWeight = weights[i + 8];
+            const blueWeight = weights[i + 16];
+            
+            document.getElementById(`w-r-${i + 1}`).textContent = redWeight.toFixed(3);
+            document.getElementById(`w-g-${i + 1}`).textContent = greenWeight.toFixed(3);
+            document.getElementById(`w-b-${i + 1}`).textContent = blueWeight.toFixed(3);
+            
+            // Color code the weights
+            this.colorCodeWeight(`w-r-${i + 1}`, redWeight);
+            this.colorCodeWeight(`w-g-${i + 1}`, greenWeight);
+            this.colorCodeWeight(`w-b-${i + 1}`, blueWeight);
+        }
+        
+        // Store weight history
+        this.weightHistory.push({
+            weights: Array.from(weights),
+            step: this.trainingCount
+        });
+    }
+
+    colorCodeWeight(elementId, weight) {
+        const element = document.getElementById(elementId);
+        element.className = 'weight-value';
+        
+        if (weight > 0.1) {
+            element.classList.add('weight-positive');
+        } else if (weight < -0.1) {
+            element.classList.add('weight-negative');
+        } else {
+            element.classList.add('weight-neutral');
+        }
+    }
+
+    updateTrainingInsights() {
+        this.updateColorSensitivity();
+        this.updateWeightChanges();
+        this.updateLearningPattern();
+        this.updatePredictionConfidence();
+    }
+
+    updateColorSensitivity() {
+        const weights = this.getWeights();
+        if (!weights) return;
+        
+        const redSensitivity = Math.abs(weights.slice(0, 8).reduce((a, b) => a + Math.abs(b), 0) / 8);
+        const greenSensitivity = Math.abs(weights.slice(8, 16).reduce((a, b) => a + Math.abs(b), 0) / 8);
+        const blueSensitivity = Math.abs(weights.slice(16, 24).reduce((a, b) => a + Math.abs(b), 0) / 8);
+        
+        const maxSensitivity = Math.max(redSensitivity, greenSensitivity, blueSensitivity);
+        const dominantColor = maxSensitivity === redSensitivity ? 'Red' : 
+                            maxSensitivity === greenSensitivity ? 'Green' : 'Blue';
+        
+        document.getElementById('color-sensitivity').innerHTML = `
+            <strong>Dominant:</strong> ${dominantColor}<br>
+            <small>R: ${redSensitivity.toFixed(3)} | G: ${greenSensitivity.toFixed(3)} | B: ${blueSensitivity.toFixed(3)}</small>
+        `;
+    }
+
+    updateWeightChanges() {
+        if (!this.previousWeights || this.weightHistory.length < 2) {
+            document.getElementById('weight-changes').textContent = 'No changes yet';
+            return;
+        }
+        
+        const currentWeights = this.getWeights();
+        const changes = currentWeights.map((w, i) => Math.abs(w - this.previousWeights[i]));
+        const avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
+        
+        const changeLevel = avgChange > 0.1 ? 'High' : avgChange > 0.05 ? 'Medium' : 'Low';
+        
+        document.getElementById('weight-changes').innerHTML = `
+            <strong>${changeLevel} activity</strong><br>
+            <small>Avg change: ${avgChange.toFixed(4)}</small>
+        `;
+    }
+
+    updateLearningPattern() {
+        if (this.trainingHistory.length < 3) {
+            document.getElementById('learning-pattern').textContent = 'Waiting for data...';
+            return;
+        }
+        
+        const recentLosses = this.trainingHistory.slice(-3).map(h => h.loss);
+        const lossTrend = recentLosses[2] < recentLosses[0] ? 'Decreasing' : 'Stable';
+        
+        const recentAccuracies = this.trainingHistory.slice(-3).map(h => h.accuracy);
+        const accuracyTrend = recentAccuracies[2] > recentAccuracies[0] ? 'Improving' : 'Stable';
+        
+        document.getElementById('learning-pattern').innerHTML = `
+            <strong>Loss:</strong> ${lossTrend}<br>
+            <strong>Accuracy:</strong> ${accuracyTrend}<br>
+            <small>Last 3 steps</small>
+        `;
+    }
+
+    updatePredictionConfidence() {
+        if (this.trainingCount < this.minTrainingExamples * 2) {
+            document.getElementById('prediction-confidence').textContent = 'Need more training';
+            return;
+        }
+        
+        const recentAccuracy = this.trainingHistory[this.trainingHistory.length - 1]?.accuracy || 0;
+        const confidence = recentAccuracy > 0.8 ? 'High' : 
+                         recentAccuracy > 0.6 ? 'Medium' : 'Low';
+        
+        document.getElementById('prediction-confidence').innerHTML = `
+            <strong>${confidence}</strong><br>
+            <small>Based on ${this.trainingCount} examples</small>
+        `;
     }
 
     async startInferenceMode() {

@@ -40,6 +40,10 @@
                         <span class="label">Current Loss:</span>
                         <span id="current-loss">-</span>
                     </div>
+                    <div class="stat">
+                        <span class="label">Accuracy:</span>
+                        <span id="current-accuracy">-</span>
+                    </div>
                 </div>
 
                 <button id="start-inference" class="btn btn-primary" disabled>
@@ -82,10 +86,95 @@
 
             <!-- Network Visualization -->
             <section class="visualization">
-                <h3>🧠 Network Weights</h3>
+                <h3>🧠 Network Insights</h3>
+                
+                <!-- Weight Canvas -->
                 <div class="weight-display">
+                    <h4>Layer 1 Weight Visualization</h4>
                     <canvas id="weight-canvas" width="300" height="200"></canvas>
+                    <p class="canvas-description">Each square represents a weight. Brighter = stronger positive weight, darker = stronger negative weight.</p>
                 </div>
+
+                <!-- Weight Table -->
+                <div class="weight-table-section">
+                    <h4>Detailed Weight Analysis</h4>
+                    <div class="table-container">
+                        <table id="weight-table">
+                            <thead>
+                                <tr>
+                                    <th>Input</th>
+                                    <th>Neuron 1</th>
+                                    <th>Neuron 2</th>
+                                    <th>Neuron 3</th>
+                                    <th>Neuron 4</th>
+                                    <th>Neuron 5</th>
+                                    <th>Neuron 6</th>
+                                    <th>Neuron 7</th>
+                                    <th>Neuron 8</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Red</strong></td>
+                                    <td id="w-r-1">-</td>
+                                    <td id="w-r-2">-</td>
+                                    <td id="w-r-3">-</td>
+                                    <td id="w-r-4">-</td>
+                                    <td id="w-r-5">-</td>
+                                    <td id="w-r-6">-</td>
+                                    <td id="w-r-7">-</td>
+                                    <td id="w-r-8">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Green</strong></td>
+                                    <td id="w-g-1">-</td>
+                                    <td id="w-g-2">-</td>
+                                    <td id="w-g-3">-</td>
+                                    <td id="w-g-4">-</td>
+                                    <td id="w-g-5">-</td>
+                                    <td id="w-g-6">-</td>
+                                    <td id="w-g-7">-</td>
+                                    <td id="w-g-8">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Blue</strong></td>
+                                    <td id="w-b-1">-</td>
+                                    <td id="w-b-2">-</td>
+                                    <td id="w-b-3">-</td>
+                                    <td id="w-b-4">-</td>
+                                    <td id="w-b-5">-</td>
+                                    <td id="w-b-6">-</td>
+                                    <td id="w-b-7">-</td>
+                                    <td id="w-b-8">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Training Insights -->
+                <div class="training-insights">
+                    <h4>Training Insights</h4>
+                    <div class="insights-grid">
+                        <div class="insight-card">
+                            <h5>🎨 Color Sensitivity</h5>
+                            <div id="color-sensitivity">Analyzing...</div>
+                        </div>
+                        <div class="insight-card">
+                            <h5>📊 Weight Changes</h5>
+                            <div id="weight-changes">No changes yet</div>
+                        </div>
+                        <div class="insight-card">
+                            <h5>🧠 Learning Pattern</h5>
+                            <div id="learning-pattern">Waiting for data...</div>
+                        </div>
+                        <div class="insight-card">
+                            <h5>🎯 Prediction Confidence</h5>
+                            <div id="prediction-confidence">-</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="network-info">
                     <span id="network-status">Initializing...</span>
                 </div>
