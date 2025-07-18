@@ -1229,6 +1229,38 @@ canvas {
     padding: 20px;
 }
 
+/* Base explanation bubble styles */
+.explanation-bubble {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Color-coded bubble types */
+.explanation-bubble.welcome {
+    border-color: #17a2b8;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+}
+
+.explanation-bubble.training {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+}
+
+.explanation-bubble.prediction {
+    border-color: #6f42c1;
+    background: linear-gradient(135deg, #faf8ff 0%, #f3e8ff 100%);
+}
+
+.explanation-bubble.concept {
+    border-color: #ffc107;
+    background: linear-gradient(135deg, #fffef8 0%, #fff8e1 100%);
+}
+
 /* Enhanced explanation bubble styles */
 .explanation-bubble.clickable {
     cursor: pointer;
@@ -1239,6 +1271,30 @@ canvas {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     border-color: #007bff;
+}
+
+/* Bubble header styles */
+.bubble-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.bubble-icon {
+    font-size: 1.2rem;
+}
+
+.bubble-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.bubble-text {
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
 .bubble-hint {
