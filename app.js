@@ -7,10 +7,15 @@ class ColorPreferenceNN {
         this.currentLoss = 0;
         this.currentAccuracy = 0;
         this.isTraining = false;
-        this.minTrainingExamples = 5;
+        this.minTrainingExamples = 10; // Increased minimum examples
         this.previousWeights = null;
         this.weightHistory = [];
         this.trainingHistory = [];
+        this.validationData = []; // New: validation data
+        this.batchSize = 8; // New: batch training
+        this.maxTrainingData = 100; // New: limit training data size
+        this.useAlternativeModel = false; // New: option to use alternative model
+        this.alternativeModel = null; // New: alternative rule-based model
         
         this.init();
     }
@@ -22,6 +27,9 @@ class ColorPreferenceNN {
             
             // Create the neural network
             this.createModel();
+            
+            // Initialize alternative model
+            this.initAlternativeModel();
             
             // Initialize UI
             this.initUI();
@@ -37,18 +45,27 @@ class ColorPreferenceNN {
     }
 
     createModel() {
-        // Simple neural network: RGB input -> hidden layer -> preference output
+        // Improved neural network with more capacity and regularization
         this.model = tf.sequential({
             layers: [
                 tf.layers.dense({
                     inputShape: [3], // RGB values
+                    units: 16, // Increased from 8
+                    activation: 'relu',
+                    kernelInitializer: 'glorotNormal',
+                    kernelRegularizer: tf.regularizers.l2({ l2: 0.01 }) // Add regularization
+                }),
+                tf.layers.dropout({ rate: 0.2 }), // Add dropout
+                tf.layers.dense({
+                    units: 12, // Increased from 4
+                    activation: 'relu',
+                    kernelRegularizer: tf.regularizers.l2({ l2: 0.01 })
+                }),
+                tf.layers.dropout({ rate: 0.2 }),
+                tf.layers.dense({
                     units: 8,
                     activation: 'relu',
-                    kernelInitializer: 'glorotNormal'
-                }),
-                tf.layers.dense({
-                    units: 4,
-                    activation: 'relu'
+                    kernelRegularizer: tf.regularizers.l2({ l2: 0.01 })
                 }),
                 tf.layers.dense({
                     units: 1,
@@ -57,12 +74,108 @@ class ColorPreferenceNN {
             ]
         });
 
-        // Compile the model
+        // Compile the model with better optimizer settings
         this.model.compile({
-            optimizer: tf.train.adam(0.01),
+            optimizer: tf.train.adam(0.005), // Reduced learning rate
             loss: 'binaryCrossentropy',
             metrics: ['accuracy']
         });
+    }
+
+    initAlternativeModel() {
+        // Simple rule-based model using HSV color space
+        this.alternativeModel = {
+            huePreferences: new Map(), // Track hue preferences
+            saturationPreferences: new Map(), // Track saturation preferences
+            valuePreferences: new Map(), // Track brightness preferences
+            trainingCount: 0,
+            
+            // Convert RGB to HSV
+            rgbToHsv: function(r, g, b) {
+                r /= 255; g /= 255; b /= 255;
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const diff = max - min;
+                
+                let h = 0, s = 0, v = max;
+                
+                if (diff !== 0) {
+                    s = diff / max;
+                    switch (max) {
+                        case r: h = (g - b) / diff + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / diff + 2; break;
+                        case b: h = (r - g) / diff + 4; break;
+                    }
+                    h /= 6;
+                }
+                
+                return { h: h * 360, s: s * 100, v: v * 100 };
+            },
+            
+            // Train on a color preference
+            train: function(color, preferred) {
+                const hsv = this.rgbToHsv(color.r, color.g, color.b);
+                
+                // Update hue preferences
+                const hueBin = Math.floor(hsv.h / 30); // 12 hue bins
+                if (!this.huePreferences.has(hueBin)) {
+                    this.huePreferences.set(hueBin, { preferred: 0, total: 0 });
+                }
+                const hueStats = this.huePreferences.get(hueBin);
+                hueStats.total++;
+                if (preferred) hueStats.preferred++;
+                
+                // Update saturation preferences
+                const satBin = Math.floor(hsv.s / 25); // 4 saturation bins
+                if (!this.saturationPreferences.has(satBin)) {
+                    this.saturationPreferences.set(satBin, { preferred: 0, total: 0 });
+                }
+                const satStats = this.saturationPreferences.get(satBin);
+                satStats.total++;
+                if (preferred) satStats.preferred++;
+                
+                // Update value preferences
+                const valBin = Math.floor(hsv.v / 25); // 4 value bins
+                if (!this.valuePreferences.has(valBin)) {
+                    this.valuePreferences.set(valBin, { preferred: 0, total: 0 });
+                }
+                const valStats = this.valuePreferences.get(valBin);
+                valStats.total++;
+                if (preferred) valStats.preferred++;
+                
+                this.trainingCount++;
+            },
+            
+            // Predict preference for a color
+            predict: function(color) {
+                const hsv = this.rgbToHsv(color.r, color.g, color.b);
+                
+                const hueBin = Math.floor(hsv.h / 30);
+                const satBin = Math.floor(hsv.s / 25);
+                const valBin = Math.floor(hsv.v / 25);
+                
+                let hueScore = 0.5, satScore = 0.5, valScore = 0.5;
+                
+                // Calculate scores based on training data
+                if (this.huePreferences.has(hueBin)) {
+                    const stats = this.huePreferences.get(hueBin);
+                    hueScore = stats.preferred / stats.total;
+                }
+                
+                if (this.saturationPreferences.has(satBin)) {
+                    const stats = this.saturationPreferences.get(satBin);
+                    satScore = stats.preferred / stats.total;
+                }
+                
+                if (this.valuePreferences.has(valBin)) {
+                    const stats = this.valuePreferences.get(valBin);
+                    valScore = stats.preferred / stats.total;
+                }
+                
+                // Weighted average of all factors
+                return (hueScore * 0.4 + satScore * 0.3 + valScore * 0.3);
+            }
+        };
     }
 
     initUI() {
@@ -86,6 +199,49 @@ class ColorPreferenceNN {
         
         // Initialize canvas for weight visualization
         this.initWeightVisualization();
+        
+        // Add model switcher if not already present
+        this.addModelSwitcher();
+    }
+
+    addModelSwitcher() {
+        // Check if switcher already exists
+        if (document.getElementById('model-switcher')) return;
+        
+        const header = document.querySelector('header');
+        const switcher = document.createElement('div');
+        switcher.id = 'model-switcher';
+        switcher.innerHTML = `
+            <div class="model-switch">
+                <label>
+                    <input type="radio" name="model" value="neural" checked> Neural Network
+                </label>
+                <label>
+                    <input type="radio" name="model" value="rule"> Rule-Based (HSV)
+                </label>
+            </div>
+        `;
+        
+        header.appendChild(switcher);
+        
+        // Add event listeners
+        const radios = switcher.querySelectorAll('input[type="radio"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.useAlternativeModel = e.target.value === 'rule';
+                this.updateNetworkStatus(`Switched to ${this.useAlternativeModel ? 'Rule-Based' : 'Neural Network'} model`);
+                
+                // Reset training data when switching models
+                this.trainingData = [];
+                this.trainingCount = 0;
+                this.trainingHistory = [];
+                this.updateStats();
+                this.updateTrainingInsights();
+                
+                // Disable inference until retrained
+                document.getElementById('start-inference').disabled = true;
+            });
+        });
     }
 
     generateNewColors() {
@@ -147,40 +303,17 @@ class ColorPreferenceNN {
         const preferredColor = this.currentColors[preferredIndex];
         const nonPreferredColor = this.currentColors[1 - preferredIndex];
         
-        // Prepare training data
-        const input1 = tf.tensor2d([[preferredColor.r / 255, preferredColor.g / 255, preferredColor.b / 255]]);
-        const input2 = tf.tensor2d([[nonPreferredColor.r / 255, nonPreferredColor.g / 255, nonPreferredColor.b / 255]]);
-        
-        const target1 = tf.tensor2d([[1]]); // Preferred
-        const target2 = tf.tensor2d([[0]]); // Non-preferred
-        
-        // Train the model
-        try {
-            const history = await this.model.fit(input1, target1, {
-                epochs: 1,
-                verbose: 0
-            });
+        if (this.useAlternativeModel) {
+            // Train alternative model
+            this.alternativeModel.train(preferredColor, true);
+            this.alternativeModel.train(nonPreferredColor, false);
             
-            const history2 = await this.model.fit(input2, target2, {
-                epochs: 1,
-                verbose: 0
-            });
-            
-            // Update training stats
+            // Update stats for alternative model
             this.trainingCount += 2;
-            this.currentLoss = (history.history.loss[0] + history2.history.loss[0]) / 2;
-            this.currentAccuracy = (history.history.acc[0] + history2.history.acc[0]) / 2;
-            
-            // Store training history
-            this.trainingHistory.push({
-                loss: this.currentLoss,
-                accuracy: this.currentAccuracy,
-                step: this.trainingCount
-            });
+            this.currentLoss = 0; // Not applicable for rule-based model
+            this.currentAccuracy = 0.5; // Placeholder
             
             this.updateStats();
-            this.updateWeightTable();
-            this.updateWeightVisualization();
             this.updateTrainingInsights();
             
             // Enable inference mode after minimum training examples
@@ -190,12 +323,87 @@ class ColorPreferenceNN {
             
             // Generate new colors for next training
             this.generateNewColors();
+        } else {
+            // Add to training data for neural network
+            this.addTrainingData(preferredColor, 1);
+            this.addTrainingData(nonPreferredColor, 0);
             
-        } catch (error) {
-            console.error('Training error:', error);
-        } finally {
-            this.isTraining = false;
+            // Train the model with accumulated data
+            try {
+                const history = await this.trainOnBatch();
+                
+                // Update training stats
+                this.trainingCount += 2;
+                this.currentLoss = history.history.loss[0];
+                this.currentAccuracy = history.history.acc[0];
+                
+                // Store training history
+                this.trainingHistory.push({
+                    loss: this.currentLoss,
+                    accuracy: this.currentAccuracy,
+                    step: this.trainingCount
+                });
+                
+                this.updateStats();
+                this.updateWeightTable();
+                this.updateWeightVisualization();
+                this.updateTrainingInsights();
+                
+                // Enable inference mode after minimum training examples
+                if (this.trainingCount >= this.minTrainingExamples * 2) {
+                    document.getElementById('start-inference').disabled = false;
+                }
+                
+                // Generate new colors for next training
+                this.generateNewColors();
+                
+            } catch (error) {
+                console.error('Training error:', error);
+            }
         }
+        
+        this.isTraining = false;
+    }
+
+    addTrainingData(color, preference) {
+        // Add new training example
+        this.trainingData.push({
+            input: [color.r / 255, color.g / 255, color.b / 255],
+            target: preference
+        });
+        
+        // Limit training data size to prevent memory issues
+        if (this.trainingData.length > this.maxTrainingData) {
+            this.trainingData = this.trainingData.slice(-this.maxTrainingData);
+        }
+    }
+
+    async trainOnBatch() {
+        if (this.trainingData.length === 0) {
+            throw new Error('No training data available');
+        }
+        
+        // Prepare batch data
+        const inputs = this.trainingData.map(example => example.input);
+        const targets = this.trainingData.map(example => example.target);
+        
+        // Convert to tensors
+        const inputTensor = tf.tensor2d(inputs);
+        const targetTensor = tf.tensor2d(targets, [targets.length, 1]);
+        
+        // Train the model
+        const history = await this.model.fit(inputTensor, targetTensor, {
+            epochs: 3, // Train for multiple epochs
+            batchSize: Math.min(this.batchSize, this.trainingData.length),
+            verbose: 0,
+            shuffle: true // Shuffle data for better training
+        });
+        
+        // Clean up tensors
+        inputTensor.dispose();
+        targetTensor.dispose();
+        
+        return history;
     }
 
     updateStats() {
@@ -215,11 +423,11 @@ class ColorPreferenceNN {
         const weights = this.getWeights();
         if (!weights) return;
         
-        // Update weight table
+        // Update weight table for first layer (16 neurons now)
         for (let i = 0; i < 8; i++) {
             const redWeight = weights[i];
-            const greenWeight = weights[i + 8];
-            const blueWeight = weights[i + 16];
+            const greenWeight = weights[i + 16];
+            const blueWeight = weights[i + 32];
             
             document.getElementById(`w-r-${i + 1}`).textContent = redWeight.toFixed(3);
             document.getElementById(`w-g-${i + 1}`).textContent = greenWeight.toFixed(3);
@@ -256,15 +464,36 @@ class ColorPreferenceNN {
         this.updateWeightChanges();
         this.updateLearningPattern();
         this.updatePredictionConfidence();
+        this.updateTrainingRecommendations();
+    }
+
+    updateTrainingRecommendations() {
+        const statusElement = document.getElementById('network-status');
+        let status = '';
+        
+        if (this.trainingCount < 10) {
+            status = `Training... (${this.trainingCount}/20 recommended examples)`;
+        } else if (this.trainingCount < 20) {
+            status = `Good progress! (${this.trainingCount}/20 examples)`;
+        } else if (this.currentAccuracy > 0.8) {
+            status = 'Model performing well! Ready for predictions.';
+        } else if (this.currentAccuracy > 0.6) {
+            status = 'Model learning... Try more diverse color combinations.';
+        } else {
+            status = 'Model needs more training with varied examples.';
+        }
+        
+        statusElement.textContent = status;
     }
 
     updateColorSensitivity() {
         const weights = this.getWeights();
         if (!weights) return;
         
-        const redSensitivity = Math.abs(weights.slice(0, 8).reduce((a, b) => a + Math.abs(b), 0) / 8);
-        const greenSensitivity = Math.abs(weights.slice(8, 16).reduce((a, b) => a + Math.abs(b), 0) / 8);
-        const blueSensitivity = Math.abs(weights.slice(16, 24).reduce((a, b) => a + Math.abs(b), 0) / 8);
+        // Calculate sensitivity for 16 neurons (3 inputs each)
+        const redSensitivity = Math.abs(weights.slice(0, 16).reduce((a, b) => a + Math.abs(b), 0) / 16);
+        const greenSensitivity = Math.abs(weights.slice(16, 32).reduce((a, b) => a + Math.abs(b), 0) / 16);
+        const blueSensitivity = Math.abs(weights.slice(32, 48).reduce((a, b) => a + Math.abs(b), 0) / 16);
         
         const maxSensitivity = Math.max(redSensitivity, greenSensitivity, blueSensitivity);
         const dominantColor = maxSensitivity === redSensitivity ? 'Red' : 
@@ -323,9 +552,20 @@ class ColorPreferenceNN {
         const confidence = recentAccuracy > 0.8 ? 'High' : 
                          recentAccuracy > 0.6 ? 'Medium' : 'Low';
         
+        // Add training recommendations
+        let recommendation = '';
+        if (this.trainingCount < 20) {
+            recommendation = '<br><small>💡 Train more for better accuracy</small>';
+        } else if (recentAccuracy < 0.7) {
+            recommendation = '<br><small>💡 Try different color combinations</small>';
+        } else if (recentAccuracy > 0.85) {
+            recommendation = '<br><small>✅ Model performing well!</small>';
+        }
+        
         document.getElementById('prediction-confidence').innerHTML = `
             <strong>${confidence}</strong><br>
             <small>Based on ${this.trainingCount} examples</small>
+            ${recommendation}
         `;
     }
 
@@ -343,22 +583,29 @@ class ColorPreferenceNN {
             // Generate new colors for prediction
             this.generateNewColors();
             
-            // Prepare input data
-            const input1 = tf.tensor2d([[this.currentColors[0].r / 255, this.currentColors[0].g / 255, this.currentColors[0].b / 255]]);
-            const input2 = tf.tensor2d([[this.currentColors[1].r / 255, this.currentColors[1].g / 255, this.currentColors[1].b / 255]]);
+            let prob1, prob2;
             
-            // Get predictions
-            const pred1 = await this.model.predict(input1).data();
-            const pred2 = await this.model.predict(input2).data();
+            if (this.useAlternativeModel) {
+                // Use alternative model for prediction
+                prob1 = this.alternativeModel.predict(this.currentColors[0]);
+                prob2 = this.alternativeModel.predict(this.currentColors[1]);
+            } else {
+                // Use neural network for prediction
+                const input1 = tf.tensor2d([[this.currentColors[0].r / 255, this.currentColors[0].g / 255, this.currentColors[0].b / 255]]);
+                const input2 = tf.tensor2d([[this.currentColors[1].r / 255, this.currentColors[1].g / 255, this.currentColors[1].b / 255]]);
+                
+                const pred1 = await this.model.predict(input1).data();
+                const pred2 = await this.model.predict(input2).data();
+                
+                prob1 = pred1[0];
+                prob2 = pred2[0];
+            }
             
             // Update prediction bars
             const pred1Fill = document.getElementById('pred1-fill');
             const pred2Fill = document.getElementById('pred2-fill');
             const pred1Text = document.getElementById('pred1-text');
             const pred2Text = document.getElementById('pred2-text');
-            
-            const prob1 = pred1[0];
-            const prob2 = pred2[0];
             
             pred1Fill.style.width = `${prob1 * 100}%`;
             pred2Fill.style.width = `${prob2 * 100}%`;
@@ -424,8 +671,8 @@ class ColorPreferenceNN {
         // Get weights from the first layer
         const weights = this.model.layers[0].getWeights()[0].dataSync();
         
-        // Draw weight visualization
-        const cellSize = 20;
+        // Draw weight visualization with smaller cells for more weights
+        const cellSize = 15; // Smaller cells
         const padding = 10;
         const cols = Math.ceil(Math.sqrt(weights.length));
         const rows = Math.ceil(weights.length / cols);
@@ -441,14 +688,14 @@ class ColorPreferenceNN {
             const intensity = Math.max(0, Math.min(1, (weight + 1) / 2));
             
             ctx.fillStyle = `rgba(0, 123, 255, ${intensity})`;
-            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
         }
         
         // Add labels
         ctx.fillStyle = '#333';
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('Layer 1 Weights', canvas.width / 2, canvas.height - 10);
+        ctx.fillText(`Layer 1 Weights (${weights.length} total)`, canvas.width / 2, canvas.height - 10);
     }
 }
 
