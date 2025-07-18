@@ -74,6 +74,8 @@ class ColorPreferenceNN {
         try {
             const response = await fetch('explanations.json');
             this.explanations = await response.json();
+            console.log('Explanations loaded successfully:', Object.keys(this.explanations));
+            console.log('UI elements available:', Object.keys(this.explanations.ui_elements || {}));
         } catch (error) {
             console.error('Error loading explanations:', error);
             this.explanations = {};
@@ -252,6 +254,19 @@ class ColorPreferenceNN {
         
         // Test model switcher functionality
         this.testModelSwitcher();
+        
+        // Add test function to window for debugging
+        window.testInsightCards = () => {
+            console.log('Testing insight cards...');
+            const insightCards = document.querySelectorAll('.insight-card');
+            console.log('Found insight cards:', insightCards.length);
+            insightCards.forEach((card, index) => {
+                const title = card.querySelector('h5')?.textContent;
+                console.log(`Card ${index}:`, title);
+                console.log('Has clickable class:', card.classList.contains('clickable'));
+                console.log('Has click event listeners:', card.onclick !== null);
+            });
+        };
     }
 
     updateModelSwitcherVisualState() {
@@ -522,7 +537,6 @@ class ColorPreferenceNN {
             '#incorrect-btn',
             '#weight-table',
             '#weight-canvas',
-            '.training-insights',
             '#model-switcher'
         ];
         
@@ -589,9 +603,11 @@ class ColorPreferenceNN {
     addInsightCardHandlers() {
         // Add click handlers for individual insight cards
         const insightCards = document.querySelectorAll('.insight-card');
-        insightCards.forEach(card => {
+        insightCards.forEach((card, index) => {
             card.classList.add('clickable');
-            card.addEventListener('click', (e) => this.handleInsightCardClick(e, card));
+            card.addEventListener('click', (e) => {
+                this.handleInsightCardClick(e, card);
+            });
         });
     }
 
@@ -635,8 +651,7 @@ class ColorPreferenceNN {
             '#weight-table': 'weight_table',
             '#weight-canvas': 'weight_canvas',
             '.training-insights': 'training_insights',
-            '#model-switcher': 'model_switcher',
-            '.insight-card': 'training_insights' // Fallback for insight cards
+            '#model-switcher': 'model_switcher'
         };
         
         const key = selectorMap[selector];
