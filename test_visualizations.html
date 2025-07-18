@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization Test - Neural Network Colour Preference Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Neural Network Colour Preference Demo - Visualization Test</h1>
+            <p>Testing advanced TensorFlow.js visualizations!</p>
+        </header>
+
+        <div class="main-content">
+            <main>
+                <section class="test-section">
+                    <h2>🎯 Test Controls</h2>
+                    <p>Click the 📈 button in the top-right corner to toggle advanced visualizations.</p>
+                    
+                    <div class="test-controls">
+                        <button id="test-training" class="btn btn-primary">Simulate Training</button>
+                        <button id="test-prediction" class="btn btn-success">Simulate Prediction</button>
+                        <button id="reset-test" class="btn btn-secondary">Reset Test</button>
+                    </div>
+                    
+                    <div class="test-info">
+                        <h3>Available Visualizations:</h3>
+                        <ul>
+                            <li>📈 <strong>Training Progress</strong> - Loss and accuracy curves</li>
+                            <li>🧠 <strong>Layer Activations</strong> - See how neurons respond to different colors</li>
+                            <li>🌊 <strong>Gradient Flow</strong> - Visualize weight updates during training</li>
+                            <li>🎯 <strong>Decision Boundary</strong> - See how the model separates color preferences</li>
+                            <li>⚡ <strong>Weight Evolution</strong> - Track how individual weights change over time</li>
+                            <li>🔍 <strong>Feature Importance</strong> - Which color channels matter most</li>
+                            <li>📊 <strong>Training Data</strong> - Distribution of your training examples</li>
+                        </ul>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Advanced Visualizations Panel -->
+            <aside class="visualizations-pane" id="visualizations-pane">
+                <div class="visualizations-header">
+                    <h3>📊 Advanced Visualizations</h3>
+                    <button class="toggle-visualizations" id="toggle-visualizations" title="Toggle visualizations">📈</button>
+                </div>
+                <div class="visualizations-content" id="visualizations-content">
+                    <!-- Loss and Accuracy Charts -->
+                    <div class="chart-section">
+                        <h4>📈 Training Progress</h4>
+                        <div class="chart-container">
+                            <canvas id="loss-chart" width="400" height="200"></canvas>
+                            <canvas id="accuracy-chart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Activation Maps -->
+                    <div class="chart-section">
+                        <h4>🧠 Layer Activations</h4>
+                        <div class="activation-container">
+                            <canvas id="activation-map" width="400" height="300"></canvas>
+                            <div class="activation-controls">
+                                <label>Layer: <select id="layer-selector">
+                                    <option value="0">Layer 1 (16 neurons)</option>
+                                    <option value="2">Layer 2 (12 neurons)</option>
+                                    <option value="4">Layer 3 (8 neurons)</option>
+                                </select></label>
+                                <button id="update-activations" class="btn btn-sm">Update</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gradient Flow Visualization -->
+                    <div class="chart-section">
+                        <h4>🌊 Gradient Flow</h4>
+                        <div class="gradient-container">
+                            <canvas id="gradient-flow" width="400" height="250"></canvas>
+                            <div class="gradient-info">
+                                <span id="gradient-magnitude">Magnitude: -</span>
+                                <span id="gradient-direction">Direction: -</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decision Boundary -->
+                    <div class="chart-section">
+                        <h4>🎯 Decision Boundary</h4>
+                        <div class="decision-container">
+                            <canvas id="decision-boundary" width="400" height="300"></canvas>
+                            <div class="decision-controls">
+                                <label>View: <select id="boundary-view">
+                                    <option value="rg">Red vs Green</option>
+                                    <option value="rb">Red vs Blue</option>
+                                    <option value="gb">Green vs Blue</option>
+                                </select></label>
+                                <button id="update-boundary" class="btn btn-sm">Update</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weight Evolution -->
+                    <div class="chart-section">
+                        <h4>⚡ Weight Evolution</h4>
+                        <div class="weight-evolution-container">
+                            <canvas id="weight-evolution" width="400" height="200"></canvas>
+                            <div class="evolution-controls">
+                                <label>Neuron: <select id="neuron-selector">
+                                    <option value="0">Neuron 1</option>
+                                    <option value="1">Neuron 2</option>
+                                    <option value="2">Neuron 3</option>
+                                    <option value="3">Neuron 4</option>
+                                    <option value="4">Neuron 5</option>
+                                    <option value="5">Neuron 6</option>
+                                    <option value="6">Neuron 7</option>
+                                    <option value="7">Neuron 8</option>
+                                </select></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature Importance -->
+                    <div class="chart-section">
+                        <h4>🔍 Feature Importance</h4>
+                        <div class="feature-importance-container">
+                            <canvas id="feature-importance" width="400" height="200"></canvas>
+                            <div class="importance-info">
+                                <span id="top-feature">Most Important: -</span>
+                                <span id="feature-scores">Scores: -</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Data Distribution -->
+                    <div class="chart-section">
+                        <h4>📊 Training Data</h4>
+                        <div class="data-distribution-container">
+                            <canvas id="data-distribution" width="400" height="250"></canvas>
+                            <div class="distribution-info">
+                                <span id="data-count">Examples: 0</span>
+                                <span id="preference-ratio">Preference Ratio: -</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <footer>
+            <p>Visualization Test • <a href="index.html">Back to Main Demo</a></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Test script for visualizations
+        document.addEventListener('DOMContentLoaded', () => {
+            const nn = new ColorPreferenceNN();
+            
+            // Test training simulation
+            document.getElementById('test-training').addEventListener('click', () => {
+                // Simulate some training data
+                for (let i = 0; i < 5; i++) {
+                    nn.trainingHistory.push({
+                        loss: Math.random() * 0.5 + 0.1,
+                        accuracy: Math.random() * 0.3 + 0.6,
+                        step: nn.trainingCount + i * 2
+                    });
+                    nn.trainingCount += 2;
+                }
+                
+                // Add some weight history
+                for (let i = 0; i < 5; i++) {
+                    nn.weightHistory.push({
+                        weights: Array(48).fill(0).map(() => Math.random() * 2 - 1),
+                        step: nn.trainingCount + i * 2
+                    });
+                }
+                
+                // Add some training data
+                for (let i = 0; i < 10; i++) {
+                    nn.trainingData.push({
+                        input: [Math.random(), Math.random(), Math.random()],
+                        target: Math.round(Math.random())
+                    });
+                }
+                
+                nn.updateAllCharts();
+                alert('Test training data added! Check the visualizations.');
+            });
+            
+            // Test prediction simulation
+            document.getElementById('test-prediction').addEventListener('click', () => {
+                nn.updateActivationMap();
+                nn.updateDecisionBoundary();
+                nn.updateWeightEvolution();
+                alert('Test predictions generated!');
+            });
+            
+            // Reset test
+            document.getElementById('reset-test').addEventListener('click', () => {
+                nn.trainingHistory = [];
+                nn.weightHistory = [];
+                nn.trainingData = [];
+                nn.trainingCount = 0;
+                nn.updateAllCharts();
+                alert('Test data reset!');
+            });
+        });
+    </script>
+</body>
+</html> 

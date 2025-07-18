@@ -225,6 +225,9 @@ class ColorPreferenceNN {
         // Initialize explanation system
         this.initExplanationSystem();
         
+        // Initialize advanced visualizations
+        this.initAdvancedVisualizations();
+        
         console.log('UI initialized, useAlternativeModel:', this.useAlternativeModel);
         
         // Set initial visual state of model switcher
@@ -290,6 +293,9 @@ class ColorPreferenceNN {
                 this.updateTrainingInsights();
                 this.updateWeightTable();
                 this.updateWeightVisualization();
+                
+                // Reset advanced visualizations
+                this.updateAllCharts();
                 
                 // Disable inference until retrained
                 document.getElementById('start-inference').disabled = true;
@@ -769,6 +775,9 @@ class ColorPreferenceNN {
                 this.updateWeightTable();
                 this.updateWeightVisualization();
                 this.updateTrainingInsights();
+                
+                // Update advanced visualizations
+                this.updateAllCharts();
                 
                 // Add training complete explanation
                 this.addExplanation('interactions', 'training_complete', 'interaction');
@@ -1432,6 +1441,713 @@ class ColorPreferenceNN {
         `;
         
         return baseExplanation + mathDetails;
+    }
+
+    // ===== ADVANCED VISUALIZATIONS =====
+    
+    initAdvancedVisualizations() {
+        // Initialize visualization toggle
+        const toggleBtn = document.getElementById('toggle-visualizations');
+        const visualizationsPane = document.getElementById('visualizations-pane');
+        
+        if (toggleBtn && visualizationsPane) {
+            toggleBtn.addEventListener('click', () => {
+                visualizationsPane.classList.toggle('active');
+                toggleBtn.textContent = visualizationsPane.classList.contains('active') ? '📊' : '📈';
+            });
+        }
+        
+        // Initialize all chart canvases
+        this.initCharts();
+        
+        // Add event listeners for interactive controls
+        this.initVisualizationControls();
+        
+        // Start real-time updates
+        this.startVisualizationUpdates();
+    }
+
+    initCharts() {
+        // Initialize all chart canvases
+        this.charts = {
+            loss: this.initLossChart(),
+            accuracy: this.initAccuracyChart(),
+            activation: this.initActivationMap(),
+            gradient: this.initGradientFlow(),
+            decision: this.initDecisionBoundary(),
+            evolution: this.initWeightEvolution(),
+            feature: this.initFeatureImportance(),
+            distribution: this.initDataDistribution()
+        };
+    }
+
+    initVisualizationControls() {
+        // Layer selector for activation maps
+        const layerSelector = document.getElementById('layer-selector');
+        const updateActivationsBtn = document.getElementById('update-activations');
+        
+        if (updateActivationsBtn) {
+            updateActivationsBtn.addEventListener('click', () => {
+                this.updateActivationMap();
+            });
+        }
+        
+        // Decision boundary controls
+        const boundaryView = document.getElementById('boundary-view');
+        const updateBoundaryBtn = document.getElementById('update-boundary');
+        
+        if (updateBoundaryBtn) {
+            updateBoundaryBtn.addEventListener('click', () => {
+                this.updateDecisionBoundary();
+            });
+        }
+        
+        // Weight evolution controls
+        const neuronSelector = document.getElementById('neuron-selector');
+        if (neuronSelector) {
+            neuronSelector.addEventListener('change', () => {
+                this.updateWeightEvolution();
+            });
+        }
+    }
+
+    startVisualizationUpdates() {
+        // Update visualizations every 2 seconds during training
+        setInterval(() => {
+            if (this.trainingHistory.length > 0) {
+                this.updateAllCharts();
+            }
+        }, 2000);
+    }
+
+    updateAllCharts() {
+        this.updateLossChart();
+        this.updateAccuracyChart();
+        this.updateGradientFlow();
+        this.updateFeatureImportance();
+        this.updateDataDistribution();
+    }
+
+    // Loss Chart
+    initLossChart() {
+        const canvas = document.getElementById('loss-chart');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx, data: [] };
+    }
+
+    updateLossChart() {
+        if (!this.charts.loss || this.trainingHistory.length === 0) return;
+        
+        const { ctx, canvas } = this.charts.loss;
+        const data = this.trainingHistory.map(h => h.loss);
+        
+        this.drawLineChart(ctx, canvas, data, 'Loss', '#dc3545', '#ff6b6b');
+    }
+
+    // Accuracy Chart
+    initAccuracyChart() {
+        const canvas = document.getElementById('accuracy-chart');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx, data: [] };
+    }
+
+    updateAccuracyChart() {
+        if (!this.charts.accuracy || this.trainingHistory.length === 0) return;
+        
+        const { ctx, canvas } = this.charts.accuracy;
+        const data = this.trainingHistory.map(h => h.accuracy * 100);
+        
+        this.drawLineChart(ctx, canvas, data, 'Accuracy (%)', '#28a745', '#51cf66');
+    }
+
+    // Generic Line Chart Drawing
+    drawLineChart(ctx, canvas, data, label, color, fillColor) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 30;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        if (data.length < 2) return;
+        
+        const min = Math.min(...data);
+        const max = Math.max(...data);
+        const range = max - min || 1;
+        
+        const xStep = (width - 2 * padding) / (data.length - 1);
+        const yScale = (height - 2 * padding) / range;
+        
+        // Draw grid
+        ctx.strokeStyle = '#e9ecef';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 5; i++) {
+            const y = padding + (height - 2 * padding) * i / 5;
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(width - padding, y);
+            ctx.stroke();
+        }
+        
+        // Draw line
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        data.forEach((value, index) => {
+            const x = padding + index * xStep;
+            const y = height - padding - (value - min) * yScale;
+            
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        
+        ctx.stroke();
+        
+        // Draw fill
+        ctx.fillStyle = fillColor;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.moveTo(padding, height - padding);
+        
+        data.forEach((value, index) => {
+            const x = padding + index * xStep;
+            const y = height - padding - (value - min) * yScale;
+            ctx.lineTo(x, y);
+        });
+        
+        ctx.lineTo(width - padding, height - padding);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        // Draw labels
+        ctx.fillStyle = '#495057';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, width / 2, height - 5);
+    }
+
+    // Activation Map
+    initActivationMap() {
+        const canvas = document.getElementById('activation-map');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx };
+    }
+
+    updateActivationMap() {
+        if (!this.charts.activation || !this.model || this.useAlternativeModel) return;
+        
+        const { ctx, canvas } = this.charts.activation;
+        const layerIndex = parseInt(document.getElementById('layer-selector').value);
+        
+        // Generate sample inputs
+        const sampleInputs = [];
+        for (let r = 0; r <= 255; r += 51) {
+            for (let g = 0; g <= 255; g += 51) {
+                for (let b = 0; b <= 255; b += 51) {
+                    sampleInputs.push([r/255, g/255, b/255]);
+                }
+            }
+        }
+        
+        // Get activations for the selected layer
+        const activations = [];
+        sampleInputs.forEach(input => {
+            const inputTensor = tf.tensor2d([input]);
+            const layerOutput = this.model.layers[layerIndex].apply(inputTensor);
+            const activation = layerOutput.dataSync();
+            activations.push(Array.from(activation));
+            inputTensor.dispose();
+            layerOutput.dispose();
+        });
+        
+        this.drawActivationMap(ctx, canvas, activations, sampleInputs);
+    }
+
+    drawActivationMap(ctx, canvas, activations, inputs) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 20;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        const gridSize = Math.ceil(Math.sqrt(activations[0].length));
+        const cellSize = Math.min((width - 2 * padding) / gridSize, (height - 2 * padding) / gridSize);
+        
+        // Draw activation grid
+        activations.forEach((activation, index) => {
+            const input = inputs[index];
+            const x = padding + (index % 8) * (cellSize + 5);
+            const y = padding + Math.floor(index / 8) * (cellSize + 5);
+            
+            // Draw color background based on input
+            ctx.fillStyle = `rgb(${input[0]*255}, ${input[1]*255}, ${input[2]*255})`;
+            ctx.fillRect(x, y, cellSize, cellSize);
+            
+            // Draw activation pattern
+            const patternSize = Math.sqrt(activation.length);
+            const patternCellSize = cellSize / patternSize;
+            
+            activation.forEach((act, actIndex) => {
+                const actX = x + (actIndex % patternSize) * patternCellSize;
+                const actY = y + Math.floor(actIndex / patternSize) * patternCellSize;
+                
+                const intensity = Math.max(0, Math.min(1, (act + 1) / 2));
+                ctx.fillStyle = `rgba(255, 255, 255, ${intensity})`;
+                ctx.fillRect(actX, actY, patternCellSize, patternCellSize);
+            });
+        });
+        
+        // Draw title
+        ctx.fillStyle = '#495057';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Layer Activations', width / 2, height - 10);
+    }
+
+    // Gradient Flow
+    initGradientFlow() {
+        const canvas = document.getElementById('gradient-flow');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx };
+    }
+
+    updateGradientFlow() {
+        if (!this.charts.gradient || !this.model || this.useAlternativeModel) return;
+        
+        const { ctx, canvas } = this.charts.gradient;
+        
+        if (!this.previousWeights) {
+            this.drawGradientFlow(ctx, canvas, null);
+            return;
+        }
+        
+        const currentWeights = this.getWeights();
+        if (!currentWeights) return;
+        
+        const gradients = currentWeights.map((w, i) => w - this.previousWeights[i]);
+        this.drawGradientFlow(ctx, canvas, gradients);
+        
+        // Update gradient info
+        const magnitude = Math.sqrt(gradients.reduce((sum, g) => sum + g * g, 0));
+        const avgGradient = gradients.reduce((sum, g) => sum + Math.abs(g), 0) / gradients.length;
+        
+        document.getElementById('gradient-magnitude').textContent = `Magnitude: ${magnitude.toFixed(4)}`;
+        document.getElementById('gradient-direction').textContent = `Avg: ${avgGradient.toFixed(4)}`;
+    }
+
+    drawGradientFlow(ctx, canvas, gradients) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 30;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        if (!gradients) {
+            ctx.fillStyle = '#666';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('No gradient data available', width / 2, height / 2);
+            return;
+        }
+        
+        // Draw gradient flow as arrows
+        const maxGradient = Math.max(...gradients.map(g => Math.abs(g)));
+        const scale = (width - 2 * padding) / gradients.length;
+        
+        ctx.strokeStyle = '#007bff';
+        ctx.lineWidth = 2;
+        
+        gradients.forEach((gradient, index) => {
+            const x = padding + index * scale;
+            const y = height / 2;
+            const arrowLength = (gradient / maxGradient) * 50;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y - arrowLength);
+            
+            // Draw arrowhead
+            if (arrowLength > 0) {
+                ctx.lineTo(x - 3, y - arrowLength + 6);
+                ctx.moveTo(x, y - arrowLength);
+                ctx.lineTo(x + 3, y - arrowLength + 6);
+            }
+            
+            ctx.stroke();
+        });
+        
+        // Draw labels
+        ctx.fillStyle = '#495057';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Gradient Flow', width / 2, height - 10);
+    }
+
+    // Decision Boundary
+    initDecisionBoundary() {
+        const canvas = document.getElementById('decision-boundary');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx };
+    }
+
+    updateDecisionBoundary() {
+        if (!this.charts.decision || !this.model || this.useAlternativeModel) return;
+        
+        const { ctx, canvas } = this.charts.decision;
+        const view = document.getElementById('boundary-view').value;
+        
+        this.drawDecisionBoundary(ctx, canvas, view);
+    }
+
+    drawDecisionBoundary(ctx, canvas, view) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 40;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        // Create grid of predictions
+        const gridSize = 50;
+        const stepX = (width - 2 * padding) / gridSize;
+        const stepY = (height - 2 * padding) / gridSize;
+        
+        const predictions = [];
+        for (let i = 0; i <= gridSize; i++) {
+            predictions[i] = [];
+            for (let j = 0; j <= gridSize; j++) {
+                const x = i / gridSize;
+                const y = j / gridSize;
+                
+                let input;
+                switch (view) {
+                    case 'rg':
+                        input = [x, y, 0.5];
+                        break;
+                    case 'rb':
+                        input = [x, 0.5, y];
+                        break;
+                    case 'gb':
+                        input = [0.5, x, y];
+                        break;
+                    default:
+                        input = [x, y, 0.5];
+                }
+                
+                // Get prediction
+                const inputTensor = tf.tensor2d([input]);
+                const prediction = this.model.predict(inputTensor).dataSync()[0];
+                predictions[i][j] = prediction;
+                inputTensor.dispose();
+            }
+        }
+        
+        // Draw decision boundary
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                const x = padding + i * stepX;
+                const y = padding + j * stepY;
+                
+                const pred = predictions[i][j];
+                const intensity = Math.max(0, Math.min(1, pred));
+                
+                ctx.fillStyle = `rgba(0, 123, 255, ${intensity})`;
+                ctx.fillRect(x, y, stepX, stepY);
+            }
+        }
+        
+        // Draw axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, height - padding);
+        ctx.moveTo(padding, height - padding);
+        ctx.lineTo(width - padding, height - padding);
+        ctx.stroke();
+        
+        // Draw labels
+        ctx.fillStyle = '#495057';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        
+        const labels = {
+            'rg': ['Red', 'Green'],
+            'rb': ['Red', 'Blue'],
+            'gb': ['Green', 'Blue']
+        };
+        
+        ctx.fillText(labels[view][0], width / 2, height - 10);
+        ctx.save();
+        ctx.translate(10, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(labels[view][1], 0, 0);
+        ctx.restore();
+    }
+
+    // Weight Evolution
+    initWeightEvolution() {
+        const canvas = document.getElementById('weight-evolution');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx };
+    }
+
+    updateWeightEvolution() {
+        if (!this.charts.evolution || this.weightHistory.length === 0) return;
+        
+        const { ctx, canvas } = this.charts.evolution;
+        const neuronIndex = parseInt(document.getElementById('neuron-selector').value);
+        
+        this.drawWeightEvolution(ctx, canvas, neuronIndex);
+    }
+
+    drawWeightEvolution(ctx, canvas, neuronIndex) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 30;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        if (this.weightHistory.length < 2) {
+            ctx.fillStyle = '#666';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Need more training data', width / 2, height / 2);
+            return;
+        }
+        
+        // Extract weights for the selected neuron
+        const redWeights = this.weightHistory.map(h => h.weights[neuronIndex]);
+        const greenWeights = this.weightHistory.map(h => h.weights[neuronIndex + 16]);
+        const blueWeights = this.weightHistory.map(h => h.weights[neuronIndex + 32]);
+        
+        const steps = this.weightHistory.map(h => h.step);
+        
+        // Draw evolution lines
+        const colors = ['#dc3545', '#28a745', '#007bff'];
+        const weightData = [redWeights, greenWeights, blueWeights];
+        const labels = ['Red', 'Green', 'Blue'];
+        
+        weightData.forEach((weights, index) => {
+            ctx.strokeStyle = colors[index];
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            weights.forEach((weight, i) => {
+                const x = padding + (steps[i] / steps[steps.length - 1]) * (width - 2 * padding);
+                const y = height - padding - ((weight + 1) / 2) * (height - 2 * padding);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+        });
+        
+        // Draw legend
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'left';
+        colors.forEach((color, index) => {
+            ctx.fillStyle = color;
+            ctx.fillRect(padding, padding + index * 15, 10, 10);
+            ctx.fillStyle = '#495057';
+            ctx.fillText(labels[index], padding + 15, padding + index * 15 + 8);
+        });
+        
+        // Draw title
+        ctx.fillStyle = '#495057';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Neuron ${neuronIndex + 1} Weight Evolution`, width / 2, height - 10);
+    }
+
+    // Feature Importance
+    initFeatureImportance() {
+        const canvas = document.getElementById('feature-importance');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx };
+    }
+
+    updateFeatureImportance() {
+        if (!this.charts.feature || !this.model || this.useAlternativeModel) return;
+        
+        const { ctx, canvas } = this.charts.feature;
+        
+        const weights = this.getWeights();
+        if (!weights) return;
+        
+        // Calculate feature importance based on weight magnitudes
+        const redImportance = Math.abs(weights.slice(0, 16).reduce((a, b) => a + Math.abs(b), 0) / 16);
+        const greenImportance = Math.abs(weights.slice(16, 32).reduce((a, b) => a + Math.abs(b), 0) / 16);
+        const blueImportance = Math.abs(weights.slice(32, 48).reduce((a, b) => a + Math.abs(b), 0) / 16);
+        
+        this.drawFeatureImportance(ctx, canvas, [redImportance, greenImportance, blueImportance]);
+        
+        // Update info
+        const features = ['Red', 'Green', 'Blue'];
+        const importances = [redImportance, greenImportance, blueImportance];
+        const maxIndex = importances.indexOf(Math.max(...importances));
+        
+        document.getElementById('top-feature').textContent = `Most Important: ${features[maxIndex]}`;
+        document.getElementById('feature-scores').textContent = `Scores: R:${redImportance.toFixed(3)} G:${greenImportance.toFixed(3)} B:${blueImportance.toFixed(3)}`;
+    }
+
+    drawFeatureImportance(ctx, canvas, importances) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 40;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        const maxImportance = Math.max(...importances);
+        const barWidth = (width - 2 * padding) / 3;
+        const colors = ['#dc3545', '#28a745', '#007bff'];
+        const labels = ['Red', 'Green', 'Blue'];
+        
+        importances.forEach((importance, index) => {
+            const x = padding + index * barWidth;
+            const barHeight = (importance / maxImportance) * (height - 2 * padding);
+            const y = height - padding - barHeight;
+            
+            // Draw bar
+            ctx.fillStyle = colors[index];
+            ctx.fillRect(x, y, barWidth - 10, barHeight);
+            
+            // Draw label
+            ctx.fillStyle = '#495057';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(labels[index], x + barWidth / 2, height - 10);
+            ctx.fillText(importance.toFixed(3), x + barWidth / 2, y - 5);
+        });
+        
+        // Draw title
+        ctx.fillStyle = '#495057';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Feature Importance', width / 2, 20);
+    }
+
+    // Data Distribution
+    initDataDistribution() {
+        const canvas = document.getElementById('data-distribution');
+        if (!canvas) return null;
+        
+        const ctx = canvas.getContext('2d');
+        return { canvas, ctx };
+    }
+
+    updateDataDistribution() {
+        if (!this.charts.distribution) return;
+        
+        const { ctx, canvas } = this.charts.distribution;
+        
+        // Analyze training data distribution
+        const redValues = this.trainingData.map(d => d.input[0] * 255);
+        const greenValues = this.trainingData.map(d => d.input[1] * 255);
+        const blueValues = this.trainingData.map(d => d.input[2] * 255);
+        const preferences = this.trainingData.map(d => d.target);
+        
+        this.drawDataDistribution(ctx, canvas, redValues, greenValues, blueValues, preferences);
+        
+        // Update info
+        const preferredCount = preferences.filter(p => p === 1).length;
+        const totalCount = preferences.length;
+        const ratio = totalCount > 0 ? (preferredCount / totalCount * 100).toFixed(1) : 0;
+        
+        document.getElementById('data-count').textContent = `Examples: ${totalCount}`;
+        document.getElementById('preference-ratio').textContent = `Preference Ratio: ${ratio}%`;
+    }
+
+    drawDataDistribution(ctx, canvas, redValues, greenValues, blueValues, preferences) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 40;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        if (redValues.length === 0) {
+            ctx.fillStyle = '#666';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('No training data available', width / 2, height / 2);
+            return;
+        }
+        
+        // Draw scatter plot of training data
+        const plotWidth = width - 2 * padding;
+        const plotHeight = height - 2 * padding;
+        
+        redValues.forEach((r, index) => {
+            const g = greenValues[index];
+            const b = blueValues[index];
+            const pref = preferences[index];
+            
+            const x = padding + (r / 255) * plotWidth;
+            const y = padding + (g / 255) * plotHeight;
+            
+            // Color based on preference
+            ctx.fillStyle = pref === 1 ? '#28a745' : '#dc3545';
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+        
+        ctx.globalAlpha = 1;
+        
+        // Draw axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, height - padding);
+        ctx.moveTo(padding, height - padding);
+        ctx.lineTo(width - padding, height - padding);
+        ctx.stroke();
+        
+        // Draw labels
+        ctx.fillStyle = '#495057';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Red', width / 2, height - 10);
+        ctx.save();
+        ctx.translate(10, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Green', 0, 0);
+        ctx.restore();
+        
+        // Draw legend
+        ctx.fillStyle = '#28a745';
+        ctx.fillRect(padding, padding - 20, 10, 10);
+        ctx.fillStyle = '#495057';
+        ctx.fillText('Preferred', padding + 15, padding - 10);
+        
+        ctx.fillStyle = '#dc3545';
+        ctx.fillRect(padding + 80, padding - 20, 10, 10);
+        ctx.fillStyle = '#495057';
+        ctx.fillText('Not Preferred', padding + 95, padding - 10);
     }
 }
 
