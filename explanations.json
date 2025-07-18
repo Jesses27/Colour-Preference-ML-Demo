@@ -1,0 +1,272 @@
+{
+  "ui_elements": {
+    "training_phase": {
+      "title": "Training Phase",
+      "explanation": "This is where you teach the neural network your color preferences. Click 'I prefer this' on the color you like better. Each choice helps the network learn your taste!",
+      "theory": "Supervised learning with binary classification. The network learns a mapping from RGB color space to preference probability using gradient descent optimization.",
+      "math": "For each training example (x, y) where x is RGB values and y is preference (0 or 1): Loss = -[y*log(ŷ) + (1-y)*log(1-ŷ)] where ŷ is the network's prediction. Weights are updated using: w = w - α∇L where α is learning rate.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Supervised_learning",
+        "https://en.wikipedia.org/wiki/Gradient_descent",
+        "https://en.wikipedia.org/wiki/Binary_classification"
+      ]
+    },
+    "inference_phase": {
+      "title": "Prediction Mode", 
+      "explanation": "Now the neural network tries to predict which color you'll prefer! The bars show the network's confidence in each prediction.",
+      "theory": "Forward propagation through trained network to compute preference probabilities. The softmax function converts raw outputs to probability distributions.",
+      "math": "For input x, output ŷ = σ(W₂·ReLU(W₁·x + b₁) + b₂) where σ is sigmoid function: σ(z) = 1/(1+e⁻ᶻ). Confidence = max(ŷ, 1-ŷ) * 100%",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Softmax_function",
+        "https://en.wikipedia.org/wiki/Sigmoid_function",
+        "https://en.wikipedia.org/wiki/Forward_propagation"
+      ]
+    },
+    "color_displays": {
+      "title": "Color Options",
+      "explanation": "These are randomly generated colors. The network learns from your preferences between these pairs.",
+      "theory": "RGB color space representation with values in [0,255] range. Each color is a 3-dimensional vector representing red, green, and blue components.",
+      "math": "Color vector c = [r, g, b] where r,g,b ∈ [0,255]. Normalized input: x = [r/255, g/255, b/255] to scale values to [0,1] range.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/RGB_color_space",
+        "https://en.wikipedia.org/wiki/Color_space",
+        "https://en.wikipedia.org/wiki/Color_theory"
+      ]
+    },
+    "prefer_buttons": {
+      "title": "Preference Buttons",
+      "explanation": "Click these to tell the network which color you prefer. This creates training data for the neural network.",
+      "theory": "Binary preference labeling creates supervised learning dataset. Each choice generates a training example with RGB input and binary preference output.",
+      "math": "Training pair: (x, y) where x = [r/255, g/255, b/255] and y ∈ {0,1}. Dataset D = {(x₁,y₁), (x₂,y₂), ..., (xₙ,yₙ)}",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Labeled_data",
+        "https://en.wikipedia.org/wiki/Training_set",
+        "https://en.wikipedia.org/wiki/Data_labeling"
+      ]
+    },
+    "training_stats": {
+      "title": "Training Statistics",
+      "explanation": "Training Examples: How many color choices you've made. Loss: How wrong the network's predictions are (lower is better). Accuracy: How often the network gets predictions right.",
+      "theory": "Real-time monitoring of training progress using binary cross-entropy loss and classification accuracy metrics.",
+      "math": "Loss = -(1/N)∑ᵢ[yᵢlog(ŷᵢ) + (1-yᵢ)log(1-ŷᵢ)]. Accuracy = (correct_predictions/total_predictions) × 100%. N = number of training examples.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Cross_entropy",
+        "https://en.wikipedia.org/wiki/Accuracy_and_precision",
+        "https://en.wikipedia.org/wiki/Evaluation_metrics"
+      ]
+    },
+    "start_inference": {
+      "title": "Start Prediction Mode",
+      "explanation": "Switch to prediction mode once you've trained the network with enough examples (at least 10).",
+      "theory": "Minimum training examples required for meaningful generalization. Prevents overfitting and ensures network has learned sufficient patterns.",
+      "math": "Minimum examples ≥ 10 for binary classification. Rule of thumb: at least 10 examples per class for basic learning.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Generalization_error",
+        "https://en.wikipedia.org/wiki/Sample_size_determination",
+        "https://en.wikipedia.org/wiki/Statistical_power"
+      ]
+    },
+    "prediction_bars": {
+      "title": "Prediction Confidence",
+      "explanation": "These bars show how confident the network is that you'll prefer each color. Higher percentage = more confident prediction.",
+      "theory": "Probability visualization of network's confidence in binary classification. Based on sigmoid output converted to percentage.",
+      "math": "Confidence = max(p, 1-p) × 100% where p = σ(z) is sigmoid output. Range: [50%, 100%] where 50% = uncertain, 100% = certain.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Confidence_interval",
+        "https://en.wikipedia.org/wiki/Probability",
+        "https://en.wikipedia.org/wiki/Uncertainty_quantification"
+      ]
+    },
+    "feedback_buttons": {
+      "title": "Feedback Buttons",
+      "explanation": "Tell the network if its prediction was correct. If wrong, it will learn from the mistake and improve!",
+      "theory": "Online learning with immediate feedback. Network updates weights based on prediction error using backpropagation.",
+      "math": "Error = |prediction - actual|. Weight update: Δw = -α∇L where ∇L is gradient of loss with respect to weights.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Online_machine_learning",
+        "https://en.wikipedia.org/wiki/Backpropagation",
+        "https://en.wikipedia.org/wiki/Error_correction"
+      ]
+    },
+    "weight_table": {
+      "title": "Neural Network Weights",
+      "explanation": "This shows the strength of connections between color inputs (RGB) and neurons. Positive values (green) strengthen connections, negative (red) weaken them.",
+      "theory": "Weight matrix visualization showing learned feature representations. Each weight represents connection strength between input and hidden layer neurons.",
+      "math": "Weight matrix W ∈ ℝ^(3×h) where h = hidden layer size. Element wᵢⱼ represents connection from input i to hidden neuron j.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Weight_(neural_networks)",
+        "https://en.wikipedia.org/wiki/Matrix_(mathematics)",
+        "https://en.wikipedia.org/wiki/Feature_extraction"
+      ]
+    },
+    "weight_canvas": {
+      "title": "Weight Visualization",
+      "explanation": "Each square represents a weight in the neural network. Brighter squares = stronger positive weights, darker = stronger negative weights.",
+      "theory": "Heatmap visualization of weight matrix. Color intensity represents weight magnitude, hue represents sign (positive/negative).",
+      "math": "Normalized weight display: w_normalized = (w - min(w)) / (max(w) - min(w)). Color intensity ∝ |w|, hue ∝ sign(w).",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Heat_map",
+        "https://en.wikipedia.org/wiki/Data_visualization",
+        "https://en.wikipedia.org/wiki/Color_mapping"
+      ]
+    },
+    "training_insights": {
+      "title": "Training Insights",
+      "explanation": "Real-time analysis of how the network is learning your color preferences and what patterns it's discovering.",
+      "theory": "Interpretability analysis showing learned color preferences and decision boundaries. Reveals which color components (R,G,B) are most important.",
+      "math": "Feature importance = |∂ŷ/∂x| where x is input feature. Gradient magnitude indicates feature sensitivity.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Interpretability",
+        "https://en.wikipedia.org/wiki/Feature_importance",
+        "https://en.wikipedia.org/wiki/Explainable_AI"
+      ]
+    },
+    "model_switcher": {
+      "title": "Model Switcher",
+      "explanation": "Switch between a neural network (learns complex patterns) and a rule-based model (uses simple color rules).",
+      "theory": "Model comparison between parametric (neural network) and non-parametric (rule-based) approaches. Different complexity vs interpretability trade-offs.",
+      "math": "Neural network: ŷ = f(x;θ) where θ are learned parameters. Rule-based: ŷ = Σᵢ wᵢ·ruleᵢ(x) where rules are predefined color heuristics.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Parametric_model",
+        "https://en.wikipedia.org/wiki/Rule-based_system",
+        "https://en.wikipedia.org/wiki/Model_comparison"
+      ]
+    }
+  },
+  "interactions": {
+    "color_preference_clicked": {
+      "title": "Training the Network",
+      "explanation": "You just taught the network! Your choice becomes training data. The network adjusts its weights to better predict your preferences next time.",
+      "theory": "Stochastic gradient descent with single example. Network updates weights immediately after each training example to minimize prediction error.",
+      "math": "For training example (x, y): w ← w - α∇L(w;x,y) where L is binary cross-entropy loss and α is learning rate (typically 0.01-0.1).",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Stochastic_gradient_descent",
+        "https://en.wikipedia.org/wiki/Online_learning",
+        "https://en.wikipedia.org/wiki/Adaptive_learning_rate"
+      ]
+    },
+    "prediction_made": {
+      "title": "Network Prediction",
+      "explanation": "The network analyzed both colors and predicted which one you'd prefer based on your previous choices. The confidence bars show how sure it is.",
+      "theory": "Forward propagation through trained network to compute preference probabilities. Network applies learned decision boundary to new color pairs.",
+      "math": "For colors c₁, c₂: p₁ = σ(f(c₁)), p₂ = σ(f(c₂)) where f is network function. Prediction = argmax(p₁, p₂), confidence = max(p₁, p₂).",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Decision_boundary",
+        "https://en.wikipedia.org/wiki/Probability_theory",
+        "https://en.wikipedia.org/wiki/Classification"
+      ]
+    },
+    "feedback_given": {
+      "title": "Learning from Feedback",
+      "explanation": "If the prediction was wrong, the network learns from its mistake and adjusts its weights. This is called 'supervised learning'!",
+      "theory": "Error-driven learning where prediction errors guide weight updates. Network minimizes loss function through gradient descent.",
+      "math": "Error = |ŷ - y|. Weight update: Δw = -α·∂L/∂w where L = -[y·log(ŷ) + (1-y)·log(1-ŷ)] and ∂L/∂w computed via backpropagation.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Supervised_learning",
+        "https://en.wikipedia.org/wiki/Error-driven_learning",
+        "https://en.wikipedia.org/wiki/Backpropagation"
+      ]
+    },
+    "model_switched": {
+      "title": "Model Changed",
+      "explanation": "You switched to a different type of model. Each has different strengths - neural networks learn complex patterns, rule-based models use simple color rules.",
+      "theory": "Model selection between different learning paradigms. Neural networks: high capacity, complex patterns. Rule-based: interpretable, simple heuristics.",
+      "math": "Neural network complexity: O(h²) parameters where h = hidden layer size. Rule-based: O(k) rules where k = number of color rules.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Model_selection",
+        "https://en.wikipedia.org/wiki/Inductive_bias",
+        "https://en.wikipedia.org/wiki/Computational_complexity"
+      ]
+    },
+    "training_complete": {
+      "title": "Training Update",
+      "explanation": "The network just finished learning from your choice. Notice how the weights, loss, and accuracy changed. The network is getting smarter!",
+      "theory": "Convergence monitoring showing training progress. Metrics track learning dynamics and model improvement over time.",
+      "math": "Loss decrease: ΔL = L(t) - L(t-1) < 0 indicates learning. Accuracy increase: ΔA = A(t) - A(t-1) > 0 indicates improvement.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Convergence_(mathematics)",
+        "https://en.wikipedia.org/wiki/Learning_curve",
+        "https://en.wikipedia.org/wiki/Convergence_analysis"
+      ]
+    },
+    "inference_enabled": {
+      "title": "Ready for Predictions",
+      "explanation": "You've trained the network with enough examples! It's now ready to make predictions about your color preferences.",
+      "theory": "Model validation threshold reached. Network has sufficient training data to generalize to new color preferences.",
+      "math": "Training examples ≥ 10 satisfies minimum data requirement. Model ready when loss < threshold and accuracy > baseline.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Model_validation",
+        "https://en.wikipedia.org/wiki/Generalization",
+        "https://en.wikipedia.org/wiki/Statistical_significance"
+      ]
+    }
+  },
+  "concepts": {
+    "neural_network": {
+      "title": "What is a Neural Network?",
+      "explanation": "A neural network is like a digital brain that learns patterns from examples. It has layers of 'neurons' that process information and make predictions.",
+      "theory": "Artificial neural networks are computational models inspired by biological neurons. They consist of interconnected nodes (neurons) organized in layers that process input data through weighted connections and activation functions.",
+      "math": "For input x, output ŷ = f(x;θ) where θ are learnable parameters. Each layer: h = σ(W·x + b) where σ is activation function, W is weight matrix, b is bias vector.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Artificial_neural_network",
+        "https://en.wikipedia.org/wiki/Deep_learning",
+        "https://en.wikipedia.org/wiki/Connectionism"
+      ]
+    },
+    "training": {
+      "title": "How Training Works",
+      "explanation": "Training means showing the network many examples and letting it adjust its internal connections (weights) to make better predictions.",
+      "theory": "Training optimizes network parameters to minimize prediction error on training data. Uses gradient-based optimization algorithms to find optimal weight values.",
+      "math": "Objective: min_θ L(θ) = (1/N)∑ᵢ L(f(xᵢ;θ), yᵢ) where L is loss function. Update rule: θ ← θ - α∇L(θ) where α is learning rate.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Optimization_(mathematics)",
+        "https://en.wikipedia.org/wiki/Gradient_descent",
+        "https://en.wikipedia.org/wiki/Loss_function"
+      ]
+    },
+    "weights": {
+      "title": "Understanding Weights",
+      "explanation": "Weights are like the strength of connections between neurons. Positive weights strengthen connections, negative weights weaken them.",
+      "theory": "Weights determine the strength and direction of information flow between neurons. They encode learned patterns and relationships in the data.",
+      "math": "Weight wᵢⱼ connects neuron i to j. Output = σ(Σᵢ wᵢⱼ·xᵢ + bⱼ) where σ is activation function. Weight magnitude |w| determines connection strength.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Weight_(neural_networks)",
+        "https://en.wikipedia.org/wiki/Connection_weight",
+        "https://en.wikipedia.org/wiki/Parameter_learning"
+      ]
+    },
+    "loss": {
+      "title": "What is Loss?",
+      "explanation": "Loss measures how wrong the network's predictions are. Lower loss means better predictions. The network tries to minimize loss during training.",
+      "theory": "Loss function quantifies prediction error and provides optimization objective. Different loss functions are appropriate for different tasks (classification, regression).",
+      "math": "Binary cross-entropy loss: L = -[y·log(ŷ) + (1-y)·log(1-ŷ)] where y is true label, ŷ is predicted probability. Range: [0,∞) where 0 = perfect prediction.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Loss_function",
+        "https://en.wikipedia.org/wiki/Cross_entropy",
+        "https://en.wikipedia.org/wiki/Information_theory"
+      ]
+    },
+    "accuracy": {
+      "title": "What is Accuracy?",
+      "explanation": "Accuracy shows what percentage of predictions the network gets right. Higher accuracy means the network is learning your preferences well.",
+      "theory": "Accuracy is a classification performance metric measuring the proportion of correct predictions. It's intuitive but may not capture all aspects of model performance.",
+      "math": "Accuracy = (TP + TN) / (TP + TN + FP + FN) where TP=true positives, TN=true negatives, FP=false positives, FN=false negatives. Range: [0,1].",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Accuracy_and_precision",
+        "https://en.wikipedia.org/wiki/Confusion_matrix",
+        "https://en.wikipedia.org/wiki/Evaluation_metrics"
+      ]
+    },
+    "overfitting": {
+      "title": "Overfitting",
+      "explanation": "When a network memorizes training data instead of learning general patterns. This demo uses techniques like dropout to prevent overfitting.",
+      "theory": "Overfitting occurs when model complexity exceeds data complexity, leading to poor generalization. Model performs well on training data but poorly on unseen data.",
+      "math": "Generalization gap = E[L_test] - E[L_train] where L is loss. Overfitting when gap is large. Regularization techniques reduce model complexity.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Overfitting",
+        "https://en.wikipedia.org/wiki/Regularization_(mathematics)",
+        "https://en.wikipedia.org/wiki/Generalization_error"
+      ]
+    }
+  }
+} 

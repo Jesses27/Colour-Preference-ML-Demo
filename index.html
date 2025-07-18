@@ -14,7 +14,8 @@
             <p>Train a neural network to learn your color preferences!</p>
         </header>
 
-        <main>
+        <div class="main-content">
+            <main>
             <!-- Training Phase -->
             <section id="training-phase" class="phase active">
                 <h2>🎯 Training Phase</h2>
@@ -180,6 +181,26 @@
                 </div>
             </section>
         </main>
+
+        <!-- Explanation Pane -->
+        <aside class="explanation-pane">
+            <div class="explanation-header">
+                <h3>💡 Learning Guide</h3>
+                <button class="clear-explanations" title="Clear all explanations">🗑️</button>
+            </div>
+            <div class="explanation-content">
+                <div class="explanation-bubble welcome">
+                    <div class="bubble-header">
+                        <span class="bubble-icon">👋</span>
+                        <span class="bubble-title">Welcome!</span>
+                    </div>
+                    <div class="bubble-text">
+                        Click on different parts of the interface to learn what they do, or watch as explanations appear during training!
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
 
         <footer>
             <p>Built with TensorFlow.js • <a href="https://github.com/Jesses27/Colour-Preference-ML-Demo/" target="_blank">GitHub Repository</a> • <a href="https://jesses27.github.io/Colour-Preference-ML-Demo/" target="_blank">Live Demo</a></p>

@@ -80,6 +80,14 @@ header p {
     font-weight: 600;
 }
 
+/* Main content layout */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+    align-items: start;
+}
+
 /* Main content */
 main {
     background: white;
@@ -527,5 +535,164 @@ footer a:hover {
     
     .visualization h4 {
         font-size: 1.1rem;
+    }
+}
+
+/* Explanation Pane */
+.explanation-pane {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.explanation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.explanation-header h3 {
+    color: #2c3e50;
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.clear-explanations {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.clear-explanations:hover {
+    background: #e9ecef;
+    transform: scale(1.05);
+}
+
+.explanation-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.explanation-bubble {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    border-left: 4px solid #007bff;
+    animation: slideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+.explanation-bubble:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.explanation-bubble.welcome {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+}
+
+.explanation-bubble.training {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+}
+
+.explanation-bubble.prediction {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+}
+
+.explanation-bubble.concept {
+    border-left-color: #6f42c1;
+    background: linear-gradient(135deg, #e2d9f3, #d4c5f7);
+}
+
+.bubble-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.bubble-icon {
+    font-size: 1.2rem;
+}
+
+.bubble-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.bubble-text {
+    color: #495057;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Clickable elements */
+.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clickable:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+}
+
+/* Responsive design for explanation pane */
+@media (max-width: 1200px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .explanation-pane {
+        position: static;
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .explanation-pane {
+        padding: 20px;
+    }
+    
+    .explanation-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .bubble-title {
+        font-size: 0.95rem;
+    }
+    
+    .bubble-text {
+        font-size: 0.9rem;
     }
 } 

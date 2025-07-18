@@ -17,6 +17,11 @@ class ColorPreferenceNN {
         this.useAlternativeModel = false; // New: option to use alternative model
         this.alternativeModel = null; // New: alternative rule-based model
         
+        // Explanation system
+        this.explanations = null;
+        this.explanationHistory = [];
+        this.maxExplanations = 10;
+        
         this.init();
     }
 
@@ -24,6 +29,9 @@ class ColorPreferenceNN {
         try {
             // Wait for TensorFlow.js to be ready
             await tf.ready();
+            
+            // Load explanations
+            await this.loadExplanations();
             
             // Create the neural network
             this.createModel();
@@ -41,6 +49,16 @@ class ColorPreferenceNN {
         } catch (error) {
             console.error('Error initializing:', error);
             this.updateNetworkStatus('Error initializing TensorFlow.js');
+        }
+    }
+
+    async loadExplanations() {
+        try {
+            const response = await fetch('explanations.json');
+            this.explanations = await response.json();
+        } catch (error) {
+            console.error('Error loading explanations:', error);
+            this.explanations = {};
         }
     }
 
@@ -202,6 +220,9 @@ class ColorPreferenceNN {
         
         // Add model switcher if not already present
         this.addModelSwitcher();
+        
+        // Initialize explanation system
+        this.initExplanationSystem();
     }
 
     addModelSwitcher() {
@@ -231,6 +252,9 @@ class ColorPreferenceNN {
                 this.useAlternativeModel = e.target.value === 'rule';
                 this.updateNetworkStatus(`Switched to ${this.useAlternativeModel ? 'Rule-Based' : 'Neural Network'} model`);
                 
+                // Add model switch explanation
+                this.addExplanation('interactions', 'model_switched', 'interaction');
+                
                 // Reset training data when switching models
                 this.trainingData = [];
                 this.trainingCount = 0;
@@ -242,6 +266,149 @@ class ColorPreferenceNN {
                 document.getElementById('start-inference').disabled = true;
             });
         });
+    }
+
+    initExplanationSystem() {
+        // Add click handlers for UI elements
+        this.addClickableElements();
+        
+        // Add clear explanations button handler
+        const clearBtn = document.querySelector('.clear-explanations');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => this.clearExplanations());
+        }
+    }
+
+    addClickableElements() {
+        // Add clickable class and handlers to UI elements
+        const clickableSelectors = [
+            '#training-phase',
+            '#inference-phase', 
+            '.color-display',
+            '.prefer-btn',
+            '.stats',
+            '#start-inference',
+            '.prediction-bar',
+            '#correct-btn',
+            '#incorrect-btn',
+            '#weight-table',
+            '#weight-canvas',
+            '.training-insights',
+            '#model-switcher'
+        ];
+        
+        clickableSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                element.classList.add('clickable');
+                element.addEventListener('click', (e) => this.handleElementClick(e, selector));
+            });
+        });
+    }
+
+    handleElementClick(event, selector) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Map selectors to explanation keys
+        const selectorMap = {
+            '#training-phase': 'training_phase',
+            '#inference-phase': 'inference_phase',
+            '.color-display': 'color_displays',
+            '.prefer-btn': 'prefer_buttons',
+            '.stats': 'training_stats',
+            '#start-inference': 'start_inference',
+            '.prediction-bar': 'prediction_bars',
+            '#correct-btn, #incorrect-btn': 'feedback_buttons',
+            '#weight-table': 'weight_table',
+            '#weight-canvas': 'weight_canvas',
+            '.training-insights': 'training_insights',
+            '#model-switcher': 'model_switcher'
+        };
+        
+        const key = selectorMap[selector];
+        if (key && this.explanations?.ui_elements?.[key]) {
+            this.addExplanation('ui_elements', key);
+        }
+    }
+
+    addExplanation(category, key, type = 'ui') {
+        if (!this.explanations?.[category]?.[key]) return;
+        
+        const explanation = this.explanations[category][key];
+        const bubbleType = this.getBubbleType(type, category);
+        
+        const bubble = document.createElement('div');
+        bubble.className = `explanation-bubble ${bubbleType}`;
+        bubble.innerHTML = `
+            <div class="bubble-header">
+                <span class="bubble-icon">${this.getBubbleIcon(bubbleType)}</span>
+                <span class="bubble-title">${explanation.title}</span>
+            </div>
+            <div class="bubble-text">${explanation.explanation}</div>
+        `;
+        
+        const content = document.querySelector('.explanation-content');
+        if (content) {
+            content.appendChild(bubble);
+            
+            // Add to history
+            this.explanationHistory.push({ category, key, type });
+            
+            // Limit number of explanations
+            if (this.explanationHistory.length > this.maxExplanations) {
+                this.removeOldestExplanation();
+            }
+            
+            // Scroll to bottom
+            content.scrollTop = content.scrollHeight;
+        }
+    }
+
+    getBubbleType(type, category) {
+        if (type === 'interaction') {
+            switch (category) {
+                case 'color_preference_clicked': return 'training';
+                case 'prediction_made': return 'prediction';
+                case 'feedback_given': return 'training';
+                case 'model_switched': return 'concept';
+                case 'training_complete': return 'training';
+                case 'inference_enabled': return 'prediction';
+                default: return 'concept';
+            }
+        }
+        return 'concept';
+    }
+
+    getBubbleIcon(type) {
+        const icons = {
+            'welcome': '👋',
+            'training': '🎯',
+            'prediction': '🔮',
+            'concept': '💡'
+        };
+        return icons[type] || '💡';
+    }
+
+    removeOldestExplanation() {
+        const content = document.querySelector('.explanation-content');
+        if (content && content.children.length > 1) { // Keep at least the welcome message
+            content.removeChild(content.children[1]); // Remove first non-welcome bubble
+            this.explanationHistory.shift();
+        }
+    }
+
+    clearExplanations() {
+        const content = document.querySelector('.explanation-content');
+        if (content) {
+            // Keep only the welcome message
+            const welcomeBubble = content.querySelector('.explanation-bubble.welcome');
+            content.innerHTML = '';
+            if (welcomeBubble) {
+                content.appendChild(welcomeBubble);
+            }
+            this.explanationHistory = [];
+        }
     }
 
     generateNewColors() {
@@ -296,6 +463,9 @@ class ColorPreferenceNN {
         
         this.isTraining = true;
         
+        // Add explanation for training interaction
+        this.addExplanation('interactions', 'color_preference_clicked', 'interaction');
+        
         // Store previous weights for analysis
         this.previousWeights = this.getWeights();
         
@@ -319,6 +489,7 @@ class ColorPreferenceNN {
             // Enable inference mode after minimum training examples
             if (this.trainingCount >= this.minTrainingExamples * 2) {
                 document.getElementById('start-inference').disabled = false;
+                this.addExplanation('interactions', 'inference_enabled', 'interaction');
             }
             
             // Generate new colors for next training
@@ -349,9 +520,13 @@ class ColorPreferenceNN {
                 this.updateWeightVisualization();
                 this.updateTrainingInsights();
                 
+                // Add training complete explanation
+                this.addExplanation('interactions', 'training_complete', 'interaction');
+                
                 // Enable inference mode after minimum training examples
                 if (this.trainingCount >= this.minTrainingExamples * 2) {
                     document.getElementById('start-inference').disabled = false;
+                    this.addExplanation('interactions', 'inference_enabled', 'interaction');
                 }
                 
                 // Generate new colors for next training
@@ -615,6 +790,9 @@ class ColorPreferenceNN {
             // Store predictions for feedback
             this.currentPredictions = [prob1, prob2];
             
+            // Add prediction explanation
+            this.addExplanation('interactions', 'prediction_made', 'interaction');
+            
             this.updateNetworkStatus('Prediction complete!');
             
         } catch (error) {
@@ -624,6 +802,9 @@ class ColorPreferenceNN {
     }
 
     async handleFeedback(isCorrect) {
+        // Add feedback explanation
+        this.addExplanation('interactions', 'feedback_given', 'interaction');
+        
         // If prediction was incorrect, add to training data
         if (!isCorrect) {
             // Determine which color was predicted as preferred
