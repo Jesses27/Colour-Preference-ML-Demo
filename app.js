@@ -21,6 +21,7 @@ class ColorPreferenceNN {
         this.explanations = null;
         this.explanationHistory = [];
         this.maxExplanations = 10;
+        this.detailedModal = null; // New: detailed explanation modal
         
         this.init();
     }
@@ -324,6 +325,103 @@ class ColorPreferenceNN {
         if (clearBtn) {
             clearBtn.addEventListener('click', () => this.clearExplanations());
         }
+        
+        // Create detailed explanation modal
+        this.createDetailedModal();
+    }
+
+    createDetailedModal() {
+        // Create modal container
+        this.detailedModal = document.createElement('div');
+        this.detailedModal.className = 'detailed-modal';
+        this.detailedModal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title"></h3>
+                    <button class="modal-close" title="Close">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="explanation-section">
+                        <h4>📝 Explanation</h4>
+                        <div class="explanation-text"></div>
+                    </div>
+                    <div class="theory-section">
+                        <h4>🧠 Theory</h4>
+                        <div class="theory-text"></div>
+                    </div>
+                    <div class="math-section">
+                        <h4>📊 Math</h4>
+                        <div class="math-text"></div>
+                    </div>
+                    <div class="resources-section">
+                        <h4>🔗 Resources</h4>
+                        <div class="resources-list"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add to DOM
+        document.body.appendChild(this.detailedModal);
+        
+        // Add event listeners
+        const closeBtn = this.detailedModal.querySelector('.modal-close');
+        const overlay = this.detailedModal.querySelector('.modal-overlay');
+        
+        closeBtn.addEventListener('click', () => this.hideDetailedModal());
+        overlay.addEventListener('click', () => this.hideDetailedModal());
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.detailedModal.classList.contains('active')) {
+                this.hideDetailedModal();
+            }
+        });
+    }
+
+    showDetailedModal(category, key) {
+        if (!this.explanations?.[category]?.[key]) return;
+        
+        const explanation = this.explanations[category][key];
+        
+        // Update modal content
+        const title = this.detailedModal.querySelector('.modal-title');
+        const explanationText = this.detailedModal.querySelector('.explanation-text');
+        const theoryText = this.detailedModal.querySelector('.theory-text');
+        const mathText = this.detailedModal.querySelector('.math-text');
+        const resourcesList = this.detailedModal.querySelector('.resources-list');
+        
+        title.textContent = explanation.title;
+        explanationText.innerHTML = explanation.explanation;
+        theoryText.innerHTML = explanation.theory;
+        mathText.innerHTML = explanation.math;
+        
+        // Create clickable resources
+        resourcesList.innerHTML = '';
+        if (explanation.resources && explanation.resources.length > 0) {
+            explanation.resources.forEach((url, index) => {
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.className = 'resource-link';
+                link.textContent = `Resource ${index + 1}`;
+                link.innerHTML = `<span class="link-icon">🔗</span> ${link.textContent}`;
+                resourcesList.appendChild(link);
+            });
+        } else {
+            resourcesList.innerHTML = '<p class="no-resources">No additional resources available.</p>';
+        }
+        
+        // Show modal
+        this.detailedModal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    hideDetailedModal() {
+        this.detailedModal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
     }
 
     addClickableElements() {
@@ -357,6 +455,35 @@ class ColorPreferenceNN {
         
         // Add model comparison explanation on first model switch
         this.addModelComparisonExplanation();
+        
+        // Add click handlers for explanation bubbles in the learning guide
+        this.addExplanationBubbleHandlers();
+    }
+
+    addExplanationBubbleHandlers() {
+        // Add click handlers for existing explanation bubbles
+        const explanationContent = document.querySelector('.explanation-content');
+        if (explanationContent) {
+            // Use event delegation for dynamically added bubbles
+            explanationContent.addEventListener('click', (e) => {
+                const bubble = e.target.closest('.explanation-bubble');
+                if (bubble && !bubble.classList.contains('welcome')) {
+                    // Find the explanation data for this bubble
+                    const bubbleTitle = bubble.querySelector('.bubble-title')?.textContent;
+                    if (bubbleTitle) {
+                        // Find matching explanation in history
+                        const matchingExplanation = this.explanationHistory.find(exp => {
+                            const expData = this.explanations?.[exp.category]?.[exp.key];
+                            return expData && expData.title === bubbleTitle;
+                        });
+                        
+                        if (matchingExplanation) {
+                            this.showDetailedModal(matchingExplanation.category, matchingExplanation.key);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     addModelComparisonExplanation() {
@@ -454,19 +581,34 @@ class ColorPreferenceNN {
         }
         
         const bubble = document.createElement('div');
-        bubble.className = `explanation-bubble ${bubbleType}`;
+        bubble.className = `explanation-bubble ${bubbleType} clickable`;
         bubble.innerHTML = `
             <div class="bubble-header">
-                <span class="bubble-icon">${this.getBubbleIcon(bubbleType)}</span>
-                <span class="bubble-title">${explanation.title}</span>
+                <div class="bubble-header-left">
+                    <span class="bubble-icon">${this.getBubbleIcon(bubbleType)}</span>
+                    <span class="bubble-title">${explanation.title}</span>
+                </div>
+                <span class="bubble-hint">💡 Click for details</span>
             </div>
             <div class="bubble-text">${detailedExplanation}</div>
         `;
         
+        // Add click handler for detailed modal
+        bubble.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showDetailedModal(category, key);
+        });
+        
         const content = document.querySelector('.explanation-content');
         if (content) {
-            // Add to the end (which will appear at bottom in normal column direction)
-            content.appendChild(bubble);
+            // Add to the beginning (which will appear at top in normal column direction)
+            const welcomeBubble = content.querySelector('.explanation-bubble.welcome');
+            if (welcomeBubble) {
+                content.insertBefore(bubble, welcomeBubble.nextSibling);
+            } else {
+                content.insertBefore(bubble, content.firstChild);
+            }
             
             // Add to history
             this.explanationHistory.push({ category, key, type });
@@ -476,8 +618,8 @@ class ColorPreferenceNN {
                 this.removeOldestExplanation();
             }
             
-            // Scroll to show new explanation (bottom in normal flex)
-            content.scrollTop = content.scrollHeight;
+            // Scroll to show new explanation (top in normal flex)
+            content.scrollTop = 0;
         }
     }
 
@@ -509,9 +651,14 @@ class ColorPreferenceNN {
     removeOldestExplanation() {
         const content = document.querySelector('.explanation-content');
         if (content && content.children.length > 1) { // Keep at least the welcome message
-            // Remove the first child (oldest in normal flex)
-            content.removeChild(content.firstChild);
-            this.explanationHistory.shift();
+            // Remove the last child (oldest since we're now adding to top)
+            const welcomeBubble = content.querySelector('.explanation-bubble.welcome');
+            const children = Array.from(content.children);
+            const oldestNonWelcome = children.find(child => child !== welcomeBubble);
+            if (oldestNonWelcome) {
+                content.removeChild(oldestNonWelcome);
+                this.explanationHistory.shift();
+            }
         }
     }
 
