@@ -8,68 +8,180 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
         }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
         .model-switcher {
             margin: 20px 0;
-            padding: 15px;
-            background: #f0f0f0;
-            border-radius: 10px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
+        
         .model-switch {
             display: flex;
-            gap: 20px;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            align-items: center;
         }
-        .model-switch label {
-            padding: 10px 15px;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+        
         .model-switch input[type="radio"] {
-            margin-right: 8px;
+            display: none;
         }
-        .status {
-            margin-top: 10px;
+        
+        .model-switch .model-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid transparent;
+        }
+        
+        .model-switch .model-option:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .model-switch input[type="radio"]:checked + .model-option {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: #007bff;
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .model-switch input[type="radio"]:checked + .model-option .model-label {
+            color: #007bff;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+        }
+        
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .debug-info h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .debug-info pre {
+            background: #e9ecef;
             padding: 10px;
-            background: #e8f4fd;
             border-radius: 5px;
+            overflow-x: auto;
         }
     </style>
 </head>
 <body>
-    <h1>Model Switcher Test</h1>
-    
-    <div id="model-switcher" class="model-switcher">
-        <div class="model-switch">
-            <label class="model-option">
-                <input type="radio" name="model" value="neural" checked>
-                <span class="model-label">🧠 Neural Network</span>
-            </label>
-            <label class="model-option">
-                <input type="radio" name="model" value="rule">
-                <span class="model-label">📊 Rule-Based (HSV)</span>
-            </label>
+    <div class="container">
+        <h1>🧠 Model Switcher Test</h1>
+        
+        <div id="model-switcher" class="model-switcher">
+            <div class="model-switch">
+                <input type="radio" name="model" value="neural" id="neural-radio" checked>
+                <label class="model-option" for="neural-radio">
+                    <span class="model-label">🧠 Neural Network</span>
+                </label>
+                <input type="radio" name="model" value="rule" id="rule-radio">
+                <label class="model-option" for="rule-radio">
+                    <span class="model-label">📊 Rule-Based (HSV)</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="debug-info">
+            <h3>Debug Information</h3>
+            <div id="debug-output">
+                <p>Click on the model options above and watch this debug information update.</p>
+            </div>
         </div>
     </div>
-    
-    <div class="status" id="status">
-        Current model: Neural Network
-    </div>
-    
+
     <script>
-        const switcher = document.getElementById('model-switcher');
-        const status = document.getElementById('status');
-        const radios = switcher.querySelectorAll('input[type="radio"]');
+        // Simple test script
+        const debugOutput = document.getElementById('debug-output');
+        const radios = document.querySelectorAll('input[type="radio"]');
         
+        function updateDebugInfo() {
+            const neuralRadio = document.getElementById('neural-radio');
+            const ruleRadio = document.getElementById('rule-radio');
+            
+            const debugInfo = {
+                neuralRadio: {
+                    checked: neuralRadio.checked,
+                    value: neuralRadio.value,
+                    id: neuralRadio.id
+                },
+                ruleRadio: {
+                    checked: ruleRadio.checked,
+                    value: ruleRadio.value,
+                    id: ruleRadio.id
+                },
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            debugOutput.innerHTML = `
+                <h4>Radio Button States:</h4>
+                <pre>${JSON.stringify(debugInfo, null, 2)}</pre>
+                
+                <h4>Current Selection:</h4>
+                <p><strong>${neuralRadio.checked ? 'Neural Network' : 'Rule-Based (HSV)'}</strong></p>
+            `;
+        }
+        
+        // Add event listeners
         radios.forEach(radio => {
             radio.addEventListener('change', (e) => {
-                const model = e.target.value === 'rule' ? 'Rule-Based (HSV)' : 'Neural Network';
-                status.textContent = `Current model: ${model}`;
-                console.log('Model switched to:', model);
+                console.log('Radio changed:', e.target.value, e.target.id);
+                updateDebugInfo();
             });
+            
+            // Also add click listeners to labels
+            const label = radio.nextElementSibling;
+            if (label && label.classList.contains('model-option')) {
+                label.addEventListener('click', (e) => {
+                    console.log('Label clicked for radio:', radio.value);
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            }
         });
         
-        console.log('Test page loaded');
+        // Initialize debug info
+        updateDebugInfo();
+        
+        console.log('Test script loaded. Found radios:', radios.length);
     </script>
 </body>
 </html> 

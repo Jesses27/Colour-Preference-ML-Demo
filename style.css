@@ -58,9 +58,11 @@ header p {
 
 .model-switch input[type="radio"] {
     display: none;
+    /* Temporary debug - uncomment to see radio buttons */
+    /* display: block; position: absolute; opacity: 0.5; */
 }
 
-.model-switch label {
+.model-switch .model-option {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -72,21 +74,23 @@ header p {
     font-weight: 600;
     font-size: 1.1rem;
     border: 2px solid transparent;
+    position: relative;
+    z-index: 1;
 }
 
-.model-switch label:hover {
+.model-switch .model-option:hover {
     background: rgba(255, 255, 255, 0.35);
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.model-switch input[type="radio"]:checked + label {
+.model-switch input[type="radio"]:checked + .model-option {
     background: rgba(255, 255, 255, 0.4);
     border-color: #007bff;
     box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
 }
 
-.model-switch input[type="radio"]:checked + label .model-label {
+.model-switch input[type="radio"]:checked + .model-option .model-label {
     color: #007bff;
     font-weight: 700;
     text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);

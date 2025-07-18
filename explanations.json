@@ -6,9 +6,18 @@
       "theory": "Supervised learning with binary classification. The network learns a mapping from RGB color space to preference probability using gradient descent optimization.",
       "math": "For each training example (x, y) where x is RGB values and y is preference (0 or 1): Loss = -[y*log(ŷ) + (1-y)*log(1-ŷ)] where ŷ is the network's prediction. Weights are updated using: w = w - α∇L where α is learning rate.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Supervised_learning",
-        "https://en.wikipedia.org/wiki/Gradient_descent",
-        "https://en.wikipedia.org/wiki/Binary_classification"
+        {
+          "url": "https://en.wikipedia.org/wiki/Supervised_learning",
+          "name": "Supervised Learning"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Gradient_descent",
+          "name": "Gradient Descent"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Binary_classification",
+          "name": "Binary Classification"
+        }
       ]
     },
     "inference_phase": {
@@ -17,9 +26,18 @@
       "theory": "Forward propagation through trained network to compute preference probabilities. The softmax function converts raw outputs to probability distributions.",
       "math": "For input x, output ŷ = σ(W₂·ReLU(W₁·x + b₁) + b₂) where σ is sigmoid function: σ(z) = 1/(1+e⁻ᶻ). Confidence = max(ŷ, 1-ŷ) * 100%",
       "resources": [
-        "https://en.wikipedia.org/wiki/Softmax_function",
-        "https://en.wikipedia.org/wiki/Sigmoid_function",
-        "https://en.wikipedia.org/wiki/Forward_propagation"
+        {
+          "url": "https://en.wikipedia.org/wiki/Softmax_function",
+          "name": "Softmax Function"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Sigmoid_function",
+          "name": "Sigmoid Function"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Forward_propagation",
+          "name": "Forward Propagation"
+        }
       ]
     },
     "color_displays": {
@@ -28,9 +46,18 @@
       "theory": "RGB color space representation with values in [0,255] range. Each color is a 3-dimensional vector representing red, green, and blue components.",
       "math": "Color vector c = [r, g, b] where r,g,b ∈ [0,255]. Normalized input: x = [r/255, g/255, b/255] to scale values to [0,1] range.",
       "resources": [
-        "https://en.wikipedia.org/wiki/RGB_color_space",
-        "https://en.wikipedia.org/wiki/Color_space",
-        "https://en.wikipedia.org/wiki/Color_theory"
+        {
+          "url": "https://en.wikipedia.org/wiki/RGB_color_space",
+          "name": "RGB Color Space"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Color_space",
+          "name": "Color Space"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Color_theory",
+          "name": "Color Theory"
+        }
       ]
     },
     "prefer_buttons": {
@@ -39,9 +66,18 @@
       "theory": "Binary preference labeling creates supervised learning dataset. Each choice generates a training example with RGB input and binary preference output.",
       "math": "Training pair: (x, y) where x = [r/255, g/255, b/255] and y ∈ {0,1}. Dataset D = {(x₁,y₁), (x₂,y₂), ..., (xₙ,yₙ)}",
       "resources": [
-        "https://en.wikipedia.org/wiki/Labeled_data",
-        "https://en.wikipedia.org/wiki/Training_set",
-        "https://en.wikipedia.org/wiki/Data_labeling"
+        {
+          "url": "https://en.wikipedia.org/wiki/Labeled_data",
+          "name": "Labeled Data"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Training_set",
+          "name": "Training Set"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Data_labeling",
+          "name": "Data Labeling"
+        }
       ]
     },
     "training_stats": {
@@ -50,9 +86,18 @@
       "theory": "Real-time monitoring of training progress using binary cross-entropy loss and classification accuracy metrics.",
       "math": "Loss = -(1/N)∑ᵢ[yᵢlog(ŷᵢ) + (1-yᵢ)log(1-ŷᵢ)]. Accuracy = (correct_predictions/total_predictions) × 100%. N = number of training examples.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Cross_entropy",
-        "https://en.wikipedia.org/wiki/Accuracy_and_precision",
-        "https://en.wikipedia.org/wiki/Evaluation_metrics"
+        {
+          "url": "https://en.wikipedia.org/wiki/Cross_entropy",
+          "name": "Cross Entropy"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Accuracy_and_precision",
+          "name": "Accuracy and Precision"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Evaluation_metrics",
+          "name": "Evaluation Metrics"
+        }
       ]
     },
     "start_inference": {
@@ -61,9 +106,18 @@
       "theory": "Minimum training examples required for meaningful generalization. Prevents overfitting and ensures network has learned sufficient patterns.",
       "math": "Minimum examples ≥ 10 for binary classification. Rule of thumb: at least 10 examples per class for basic learning.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Generalization_error",
-        "https://en.wikipedia.org/wiki/Sample_size_determination",
-        "https://en.wikipedia.org/wiki/Statistical_power"
+        {
+          "url": "https://en.wikipedia.org/wiki/Generalization_error",
+          "name": "Generalization Error"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Sample_size_determination",
+          "name": "Sample Size Determination"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Statistical_power",
+          "name": "Statistical Power"
+        }
       ]
     },
     "prediction_bars": {
@@ -72,9 +126,18 @@
       "theory": "Probability visualization of network's confidence in binary classification. Based on sigmoid output converted to percentage.",
       "math": "Confidence = max(p, 1-p) × 100% where p = σ(z) is sigmoid output. Range: [50%, 100%] where 50% = uncertain, 100% = certain.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Confidence_interval",
-        "https://en.wikipedia.org/wiki/Probability",
-        "https://en.wikipedia.org/wiki/Uncertainty_quantification"
+        {
+          "url": "https://en.wikipedia.org/wiki/Confidence_interval",
+          "name": "Confidence Interval"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Probability",
+          "name": "Probability"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Uncertainty_quantification",
+          "name": "Uncertainty Quantification"
+        }
       ]
     },
     "feedback_buttons": {
@@ -83,9 +146,18 @@
       "theory": "Online learning with immediate feedback. Network updates weights based on prediction error using backpropagation.",
       "math": "Error = |prediction - actual|. Weight update: Δw = -α∇L where ∇L is gradient of loss with respect to weights.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Online_machine_learning",
-        "https://en.wikipedia.org/wiki/Backpropagation",
-        "https://en.wikipedia.org/wiki/Error_correction"
+        {
+          "url": "https://en.wikipedia.org/wiki/Online_machine_learning",
+          "name": "Online Machine Learning"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Backpropagation",
+          "name": "Backpropagation"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Error_correction",
+          "name": "Error Correction"
+        }
       ]
     },
     "weight_table": {
@@ -94,9 +166,18 @@
       "theory": "Weight matrix visualization showing learned feature representations. Each weight represents connection strength between input and hidden layer neurons.",
       "math": "Weight matrix W ∈ ℝ^(3×h) where h = hidden layer size. Element wᵢⱼ represents connection from input i to hidden neuron j.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Weight_(neural_networks)",
-        "https://en.wikipedia.org/wiki/Matrix_(mathematics)",
-        "https://en.wikipedia.org/wiki/Feature_extraction"
+        {
+          "url": "https://en.wikipedia.org/wiki/Weight_(neural_networks)",
+          "name": "Neural Network Weights"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Matrix_(mathematics)",
+          "name": "Matrix Mathematics"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Feature_extraction",
+          "name": "Feature Extraction"
+        }
       ]
     },
     "weight_canvas": {
@@ -105,9 +186,18 @@
       "theory": "Heatmap visualization of weight matrix. Color intensity represents weight magnitude, hue represents sign (positive/negative).",
       "math": "Normalized weight display: w_normalized = (w - min(w)) / (max(w) - min(w)). Color intensity ∝ |w|, hue ∝ sign(w).",
       "resources": [
-        "https://en.wikipedia.org/wiki/Heat_map",
-        "https://en.wikipedia.org/wiki/Data_visualization",
-        "https://en.wikipedia.org/wiki/Color_mapping"
+        {
+          "url": "https://en.wikipedia.org/wiki/Heat_map",
+          "name": "Heat Map"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Data_visualization",
+          "name": "Data Visualization"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Color_mapping",
+          "name": "Color Mapping"
+        }
       ]
     },
     "training_insights": {
@@ -116,9 +206,18 @@
       "theory": "Interpretability analysis showing learned color preferences and decision boundaries. Reveals which color components (R,G,B) are most important.",
       "math": "Feature importance = |∂ŷ/∂x| where x is input feature. Gradient magnitude indicates feature sensitivity.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Interpretability",
-        "https://en.wikipedia.org/wiki/Feature_importance",
-        "https://en.wikipedia.org/wiki/Explainable_AI"
+        {
+          "url": "https://en.wikipedia.org/wiki/Interpretability",
+          "name": "Interpretability"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Feature_importance",
+          "name": "Feature Importance"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Explainable_AI",
+          "name": "Explainable AI"
+        }
       ]
     },
     "color_sensitivity": {
@@ -127,9 +226,18 @@
       "theory": "Feature importance analysis using weight magnitude as proxy for sensitivity. Higher average absolute weights indicate stronger influence of that color component on predictions.",
       "math": "Sensitivity = (1/n)∑ᵢ|wᵢ| where wᵢ are weights for color component. Dominant color = argmax(sensitivity_red, sensitivity_green, sensitivity_blue).",
       "resources": [
-        "https://en.wikipedia.org/wiki/Feature_importance",
-        "https://en.wikipedia.org/wiki/Feature_selection",
-        "https://en.wikipedia.org/wiki/Interpretability"
+        {
+          "url": "https://en.wikipedia.org/wiki/Feature_importance",
+          "name": "Feature Importance"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Feature_selection",
+          "name": "Feature Selection"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Interpretability",
+          "name": "Interpretability"
+        }
       ]
     },
     "weight_changes": {
@@ -138,9 +246,18 @@
       "theory": "Learning dynamics analysis through weight change monitoring. Large changes indicate active learning, small changes suggest convergence or overfitting.",
       "math": "Average change = (1/n)∑ᵢ|Δwᵢ| where Δwᵢ = wᵢ_new - wᵢ_old. Activity level: High > 0.1, Medium > 0.05, Low ≤ 0.05.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Convergence_(mathematics)",
-        "https://en.wikipedia.org/wiki/Learning_rate",
-        "https://en.wikipedia.org/wiki/Gradient_descent"
+        {
+          "url": "https://en.wikipedia.org/wiki/Convergence_(mathematics)",
+          "name": "Convergence"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Learning_rate",
+          "name": "Learning Rate"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Gradient_descent",
+          "name": "Gradient Descent"
+        }
       ]
     },
     "learning_pattern": {
@@ -149,9 +266,18 @@
       "theory": "Learning curve analysis using recent training history. Monitors convergence patterns and identifies potential issues like overfitting or underfitting.",
       "math": "Loss trend = sign(L₃ - L₁) where Lᵢ are last 3 loss values. Accuracy trend = sign(A₃ - A₁) where Aᵢ are last 3 accuracy values. Positive = improving, negative = degrading.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Learning_curve",
-        "https://en.wikipedia.org/wiki/Convergence_analysis",
-        "https://en.wikipedia.org/wiki/Model_validation"
+        {
+          "url": "https://en.wikipedia.org/wiki/Learning_curve",
+          "name": "Learning Curve"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Convergence_analysis",
+          "name": "Convergence Analysis"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Model_validation",
+          "name": "Model Validation"
+        }
       ]
     },
     "prediction_confidence": {
@@ -160,9 +286,18 @@
       "theory": "Confidence estimation based on training accuracy and data sufficiency. Combines model performance with training data quantity to assess prediction reliability.",
       "math": "Confidence = f(accuracy, training_examples) where f is confidence function. High: accuracy > 0.8, Medium: accuracy > 0.6, Low: accuracy ≤ 0.6 or insufficient data.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Confidence_interval",
-        "https://en.wikipedia.org/wiki/Uncertainty_quantification",
-        "https://en.wikipedia.org/wiki/Statistical_significance"
+        {
+          "url": "https://en.wikipedia.org/wiki/Confidence_interval",
+          "name": "Confidence Interval"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Uncertainty_quantification",
+          "name": "Uncertainty Quantification"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Statistical_significance",
+          "name": "Statistical Significance"
+        }
       ]
     },
     "model_switcher": {
@@ -171,9 +306,18 @@
       "theory": "Model comparison between parametric (neural network) and non-parametric (rule-based) approaches. Neural networks learn complex, non-linear decision boundaries, while rule-based models use interpretable color space heuristics.",
       "math": "Neural network: ŷ = f(x;θ) where θ are learned parameters. Rule-based: ŷ = Σᵢ wᵢ·ruleᵢ(x) where rules are predefined color heuristics.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Parametric_model",
-        "https://en.wikipedia.org/wiki/Rule-based_system",
-        "https://en.wikipedia.org/wiki/Model_comparison"
+        {
+          "url": "https://en.wikipedia.org/wiki/Parametric_model",
+          "name": "Parametric Model"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Rule-based_system",
+          "name": "Rule-Based System"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Model_comparison",
+          "name": "Model Comparison"
+        }
       ]
     }
   },
@@ -184,9 +328,18 @@
       "theory": "Stochastic gradient descent with single example. Network updates weights immediately after each training example to minimize prediction error.",
       "math": "For training example (x, y): w ← w - α∇L(w;x,y) where L is binary cross-entropy loss and α is learning rate (typically 0.01-0.1).",
       "resources": [
-        "https://en.wikipedia.org/wiki/Stochastic_gradient_descent",
-        "https://en.wikipedia.org/wiki/Online_learning",
-        "https://en.wikipedia.org/wiki/Adaptive_learning_rate"
+        {
+          "url": "https://en.wikipedia.org/wiki/Stochastic_gradient_descent",
+          "name": "Stochastic Gradient Descent"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Online_learning",
+          "name": "Online Learning"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Adaptive_learning_rate",
+          "name": "Adaptive Learning Rate"
+        }
       ]
     },
     "prediction_made": {
@@ -195,9 +348,18 @@
       "theory": "Forward propagation through trained network to compute preference probabilities. Network applies learned decision boundary to new color pairs.",
       "math": "For colors c₁, c₂: p₁ = σ(f(c₁)), p₂ = σ(f(c₂)) where f is network function. Prediction = argmax(p₁, p₂), confidence = max(p₁, p₂).",
       "resources": [
-        "https://en.wikipedia.org/wiki/Decision_boundary",
-        "https://en.wikipedia.org/wiki/Probability_theory",
-        "https://en.wikipedia.org/wiki/Classification"
+        {
+          "url": "https://en.wikipedia.org/wiki/Decision_boundary",
+          "name": "Decision Boundary"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Probability_theory",
+          "name": "Probability Theory"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Classification",
+          "name": "Classification"
+        }
       ]
     },
     "feedback_given": {
@@ -206,9 +368,18 @@
       "theory": "Error-driven learning where prediction errors guide weight updates. Network minimizes loss function through gradient descent.",
       "math": "Error = |ŷ - y|. Weight update: Δw = -α·∂L/∂w where L = -[y·log(ŷ) + (1-y)·log(1-ŷ)] and ∂L/∂w computed via backpropagation.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Supervised_learning",
-        "https://en.wikipedia.org/wiki/Error-driven_learning",
-        "https://en.wikipedia.org/wiki/Backpropagation"
+        {
+          "url": "https://en.wikipedia.org/wiki/Supervised_learning",
+          "name": "Supervised Learning"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Error-driven_learning",
+          "name": "Error-Driven Learning"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Backpropagation",
+          "name": "Backpropagation"
+        }
       ]
     },
     "model_switched": {
@@ -217,9 +388,18 @@
       "theory": "Model selection between different learning paradigms. Neural networks: high capacity, complex patterns, gradient-based optimization. Rule-based: interpretable, simple heuristics, statistical learning.",
       "math": "Neural network complexity: O(h²) parameters where h = hidden layer size. Rule-based: O(k) rules where k = number of color bins. Different optimization strategies: gradient descent vs statistical counting.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Model_selection",
-        "https://en.wikipedia.org/wiki/Inductive_bias",
-        "https://en.wikipedia.org/wiki/Computational_complexity"
+        {
+          "url": "https://en.wikipedia.org/wiki/Model_selection",
+          "name": "Model Selection"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Inductive_bias",
+          "name": "Inductive Bias"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Computational_complexity",
+          "name": "Computational Complexity"
+        }
       ]
     },
     "training_complete": {
@@ -228,9 +408,18 @@
       "theory": "Convergence monitoring showing training progress. Metrics track learning dynamics and model improvement over time.",
       "math": "Loss decrease: ΔL = L(t) - L(t-1) < 0 indicates learning. Accuracy increase: ΔA = A(t) - A(t-1) > 0 indicates improvement.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Convergence_(mathematics)",
-        "https://en.wikipedia.org/wiki/Learning_curve",
-        "https://en.wikipedia.org/wiki/Convergence_analysis"
+        {
+          "url": "https://en.wikipedia.org/wiki/Convergence_(mathematics)",
+          "name": "Convergence"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Learning_curve",
+          "name": "Learning Curve"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Convergence_analysis",
+          "name": "Convergence Analysis"
+        }
       ]
     },
     "inference_enabled": {
@@ -239,9 +428,18 @@
       "theory": "Model validation threshold reached. Network has sufficient training data to generalize to new color preferences.",
       "math": "Training examples ≥ 10 satisfies minimum data requirement. Model ready when loss < threshold and accuracy > baseline.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Model_validation",
-        "https://en.wikipedia.org/wiki/Generalization",
-        "https://en.wikipedia.org/wiki/Statistical_significance"
+        {
+          "url": "https://en.wikipedia.org/wiki/Model_validation",
+          "name": "Model Validation"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Generalization",
+          "name": "Generalization"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Statistical_significance",
+          "name": "Statistical Significance"
+        }
       ]
     }
   },
@@ -252,9 +450,18 @@
       "theory": "Artificial neural networks are computational models inspired by biological neurons. They consist of interconnected nodes (neurons) organized in layers that process input data through weighted connections and activation functions.",
       "math": "For input x, output ŷ = f(x;θ) where θ are learnable parameters. Each layer: h = σ(W·x + b) where σ is activation function, W is weight matrix, b is bias vector.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Artificial_neural_network",
-        "https://en.wikipedia.org/wiki/Deep_learning",
-        "https://en.wikipedia.org/wiki/Connectionism"
+        {
+          "url": "https://en.wikipedia.org/wiki/Artificial_neural_network",
+          "name": "Artificial Neural Network"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Deep_learning",
+          "name": "Deep Learning"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Connectionism",
+          "name": "Connectionism"
+        }
       ]
     },
     "rule_based_model": {
@@ -263,9 +470,18 @@
       "theory": "Rule-based models use predefined heuristics and statistical patterns rather than learned parameters. They're more interpretable but may have limited capacity for complex patterns compared to neural networks.",
       "math": "For color c, preference ŷ = Σᵢ wᵢ·binᵢ(c) where binᵢ(c) indicates if color c falls in bin i, and wᵢ is the learned preference weight for that bin.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Rule-based_system",
-        "https://en.wikipedia.org/wiki/HSV_color_space",
-        "https://en.wikipedia.org/wiki/Heuristic"
+        {
+          "url": "https://en.wikipedia.org/wiki/Rule-based_system",
+          "name": "Rule-Based System"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/HSV_color_space",
+          "name": "HSV Color Space"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Heuristic",
+          "name": "Heuristic"
+        }
       ]
     },
     "training": {
@@ -274,9 +490,18 @@
       "theory": "Training optimizes network parameters to minimize prediction error on training data. Uses gradient-based optimization algorithms to find optimal weight values.",
       "math": "Objective: min_θ L(θ) = (1/N)∑ᵢ L(f(xᵢ;θ), yᵢ) where L is loss function. Update rule: θ ← θ - α∇L(θ) where α is learning rate.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Optimization_(mathematics)",
-        "https://en.wikipedia.org/wiki/Gradient_descent",
-        "https://en.wikipedia.org/wiki/Loss_function"
+        {
+          "url": "https://en.wikipedia.org/wiki/Optimization_(mathematics)",
+          "name": "Optimization"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Gradient_descent",
+          "name": "Gradient Descent"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Loss_function",
+          "name": "Loss Function"
+        }
       ]
     },
     "weights": {
@@ -285,9 +510,18 @@
       "theory": "Weights determine the strength and direction of information flow between neurons. They encode learned patterns and relationships in the data.",
       "math": "Weight wᵢⱼ connects neuron i to j. Output = σ(Σᵢ wᵢⱼ·xᵢ + bⱼ) where σ is activation function. Weight magnitude |w| determines connection strength.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Weight_(neural_networks)",
-        "https://en.wikipedia.org/wiki/Connection_weight",
-        "https://en.wikipedia.org/wiki/Parameter_learning"
+        {
+          "url": "https://en.wikipedia.org/wiki/Weight_(neural_networks)",
+          "name": "Neural Network Weights"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Connection_weight",
+          "name": "Connection Weight"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Parameter_learning",
+          "name": "Parameter Learning"
+        }
       ]
     },
     "loss": {
@@ -296,9 +530,18 @@
       "theory": "Loss function quantifies prediction error and provides optimization objective. Different loss functions are appropriate for different tasks (classification, regression).",
       "math": "Binary cross-entropy loss: L = -[y·log(ŷ) + (1-y)·log(1-ŷ)] where y is true label, ŷ is predicted probability. Range: [0,∞) where 0 = perfect prediction.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Loss_function",
-        "https://en.wikipedia.org/wiki/Cross_entropy",
-        "https://en.wikipedia.org/wiki/Information_theory"
+        {
+          "url": "https://en.wikipedia.org/wiki/Loss_function",
+          "name": "Loss Function"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Cross_entropy",
+          "name": "Cross Entropy"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Information_theory",
+          "name": "Information Theory"
+        }
       ]
     },
     "accuracy": {
@@ -307,9 +550,18 @@
       "theory": "Accuracy is a classification performance metric measuring the proportion of correct predictions. It's intuitive but may not capture all aspects of model performance.",
       "math": "Accuracy = (TP + TN) / (TP + TN + FP + FN) where TP=true positives, TN=true negatives, FP=false positives, FN=false negatives. Range: [0,1].",
       "resources": [
-        "https://en.wikipedia.org/wiki/Accuracy_and_precision",
-        "https://en.wikipedia.org/wiki/Confusion_matrix",
-        "https://en.wikipedia.org/wiki/Evaluation_metrics"
+        {
+          "url": "https://en.wikipedia.org/wiki/Accuracy_and_precision",
+          "name": "Accuracy and Precision"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Confusion_matrix",
+          "name": "Confusion Matrix"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Evaluation_metrics",
+          "name": "Evaluation Metrics"
+        }
       ]
     },
     "overfitting": {
@@ -318,9 +570,18 @@
       "theory": "Overfitting occurs when model complexity exceeds data complexity, leading to poor generalization. Model performs well on training data but poorly on unseen data.",
       "math": "Generalization gap = E[L_test] - E[L_train] where L is loss. Overfitting when gap is large. Regularization techniques reduce model complexity.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Overfitting",
-        "https://en.wikipedia.org/wiki/Regularization_(mathematics)",
-        "https://en.wikipedia.org/wiki/Generalization_error"
+        {
+          "url": "https://en.wikipedia.org/wiki/Overfitting",
+          "name": "Overfitting"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Regularization_(mathematics)",
+          "name": "Regularization"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Generalization_error",
+          "name": "Generalization Error"
+        }
       ]
     },
     "model_comparison": {
@@ -329,9 +590,18 @@
       "theory": "Different learning paradigms offer different trade-offs. Neural networks excel at complex pattern recognition but are 'black boxes.' Rule-based models are interpretable but may have limited expressiveness for complex relationships.",
       "math": "Neural Network: O(h²) parameters, complex decision boundaries. Rule-Based: O(k) rules, linear combinations of color bins. Complexity vs interpretability trade-off.",
       "resources": [
-        "https://en.wikipedia.org/wiki/Model_comparison",
-        "https://en.wikipedia.org/wiki/Interpretability",
-        "https://en.wikipedia.org/wiki/Computational_complexity"
+        {
+          "url": "https://en.wikipedia.org/wiki/Model_comparison",
+          "name": "Model Comparison"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Interpretability",
+          "name": "Interpretability"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Computational_complexity",
+          "name": "Computational Complexity"
+        }
       ]
     }
   }

@@ -47,6 +47,23 @@ class ColorPreferenceNN {
             this.generateNewColors();
             
             this.updateNetworkStatus('Ready to train!');
+            
+            // Debug: Check if model switcher is working
+            setTimeout(() => {
+                console.log('=== Model Switcher Debug ===');
+                const switcher = document.getElementById('model-switcher');
+                const neuralRadio = document.getElementById('neural-radio');
+                const ruleRadio = document.getElementById('rule-radio');
+                
+                console.log('Switcher found:', !!switcher);
+                console.log('Neural radio found:', !!neuralRadio);
+                console.log('Rule radio found:', !!ruleRadio);
+                console.log('Initial useAlternativeModel:', this.useAlternativeModel);
+                console.log('Neural radio checked:', neuralRadio?.checked);
+                console.log('Rule radio checked:', ruleRadio?.checked);
+                console.log('==========================');
+            }, 1000);
+            
         } catch (error) {
             console.error('Error initializing:', error);
             this.updateNetworkStatus('Error initializing TensorFlow.js');
@@ -232,11 +249,17 @@ class ColorPreferenceNN {
         
         // Set initial visual state of model switcher
         this.updateModelSwitcherVisualState();
+        
+        // Test model switcher functionality
+        this.testModelSwitcher();
     }
 
     updateModelSwitcherVisualState() {
         const switcher = document.getElementById('model-switcher');
-        if (!switcher) return;
+        if (!switcher) {
+            console.error('Model switcher not found in updateModelSwitcherVisualState');
+            return;
+        }
         
         // Update the checked state of radio buttons
         const neuralRadio = document.getElementById('neural-radio');
@@ -245,7 +268,59 @@ class ColorPreferenceNN {
         if (neuralRadio && ruleRadio) {
             neuralRadio.checked = !this.useAlternativeModel;
             ruleRadio.checked = this.useAlternativeModel;
+            console.log('Updated radio states:', {
+                neural: neuralRadio.checked,
+                rule: ruleRadio.checked,
+                useAlternativeModel: this.useAlternativeModel
+            });
+        } else {
+            console.error('Radio buttons not found:', { neural: !!neuralRadio, rule: !!ruleRadio });
         }
+    }
+    
+    testModelSwitcher() {
+        console.log('=== Testing Model Switcher ===');
+        
+        const neuralRadio = document.getElementById('neural-radio');
+        const ruleRadio = document.getElementById('rule-radio');
+        
+        if (!neuralRadio || !ruleRadio) {
+            console.error('Radio buttons not found for testing');
+            return;
+        }
+        
+        // Test 1: Check initial state
+        console.log('Test 1 - Initial state:');
+        console.log('Neural radio checked:', neuralRadio.checked);
+        console.log('Rule radio checked:', ruleRadio.checked);
+        console.log('useAlternativeModel:', this.useAlternativeModel);
+        
+        // Test 2: Try to programmatically switch to rule-based
+        console.log('Test 2 - Switching to rule-based:');
+        ruleRadio.checked = true;
+        neuralRadio.checked = false;
+        ruleRadio.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        setTimeout(() => {
+            console.log('After switching to rule-based:');
+            console.log('Neural radio checked:', neuralRadio.checked);
+            console.log('Rule radio checked:', ruleRadio.checked);
+            console.log('useAlternativeModel:', this.useAlternativeModel);
+            
+            // Test 3: Try to switch back to neural
+            console.log('Test 3 - Switching back to neural:');
+            neuralRadio.checked = true;
+            ruleRadio.checked = false;
+            neuralRadio.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            setTimeout(() => {
+                console.log('After switching back to neural:');
+                console.log('Neural radio checked:', neuralRadio.checked);
+                console.log('Rule radio checked:', ruleRadio.checked);
+                console.log('useAlternativeModel:', this.useAlternativeModel);
+                console.log('=== Test Complete ===');
+            }, 100);
+        }, 100);
     }
 
     initModelSwitcher() {
@@ -262,9 +337,9 @@ class ColorPreferenceNN {
         console.log('Found radios:', radios.length);
         
         radios.forEach((radio, index) => {
-            console.log(`Adding listener to radio ${index}:`, radio.value);
+            console.log(`Adding listener to radio ${index}:`, radio.value, radio.id);
             radio.addEventListener('change', (e) => {
-                console.log('Radio changed:', e.target.value);
+                console.log('Radio changed:', e.target.value, e.target.id);
                 this.useAlternativeModel = e.target.value === 'rule';
                 console.log('useAlternativeModel set to:', this.useAlternativeModel);
                 
@@ -308,6 +383,16 @@ class ColorPreferenceNN {
                 
                 console.log('Model switch complete');
             });
+            
+            // Also add click listeners to labels for better accessibility
+            const label = radio.nextElementSibling;
+            if (label && label.classList.contains('model-option')) {
+                label.addEventListener('click', (e) => {
+                    console.log('Label clicked for radio:', radio.value);
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            }
         });
     }
 
@@ -395,14 +480,18 @@ class ColorPreferenceNN {
         // Create clickable resources
         resourcesList.innerHTML = '';
         if (explanation.resources && explanation.resources.length > 0) {
-            explanation.resources.forEach((url, index) => {
+            explanation.resources.forEach((resource, index) => {
                 const link = document.createElement('a');
+                // Handle both old format (string URLs) and new format (objects with url and name)
+                const url = typeof resource === 'string' ? resource : resource.url;
+                const name = typeof resource === 'string' ? `Resource ${index + 1}` : resource.name;
+                
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
                 link.className = 'resource-link';
-                link.textContent = `Resource ${index + 1}`;
-                link.innerHTML = `<span class="link-icon">🔗</span> ${link.textContent}`;
+                link.textContent = name;
+                link.innerHTML = `<span class="link-icon">🔗</span> ${name}`;
                 resourcesList.appendChild(link);
             });
         } else {
