@@ -121,10 +121,54 @@
         "https://en.wikipedia.org/wiki/Explainable_AI"
       ]
     },
+    "color_sensitivity": {
+      "title": "Color Sensitivity Analysis",
+      "explanation": "This shows which color component (Red, Green, or Blue) the network considers most important when making predictions. The dominant color has the strongest average weight connections.",
+      "theory": "Feature importance analysis using weight magnitude as proxy for sensitivity. Higher average absolute weights indicate stronger influence of that color component on predictions.",
+      "math": "Sensitivity = (1/n)∑ᵢ|wᵢ| where wᵢ are weights for color component. Dominant color = argmax(sensitivity_red, sensitivity_green, sensitivity_blue).",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Feature_importance",
+        "https://en.wikipedia.org/wiki/Feature_selection",
+        "https://en.wikipedia.org/wiki/Interpretability"
+      ]
+    },
+    "weight_changes": {
+      "title": "Weight Change Monitoring",
+      "explanation": "This tracks how much the network's internal connections (weights) are changing during training. High activity means the network is actively learning, low activity suggests it's stabilizing.",
+      "theory": "Learning dynamics analysis through weight change monitoring. Large changes indicate active learning, small changes suggest convergence or overfitting.",
+      "math": "Average change = (1/n)∑ᵢ|Δwᵢ| where Δwᵢ = wᵢ_new - wᵢ_old. Activity level: High > 0.1, Medium > 0.05, Low ≤ 0.05.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Convergence_(mathematics)",
+        "https://en.wikipedia.org/wiki/Learning_rate",
+        "https://en.wikipedia.org/wiki/Gradient_descent"
+      ]
+    },
+    "learning_pattern": {
+      "title": "Learning Pattern Analysis",
+      "explanation": "This analyzes the recent trend in loss and accuracy to understand how the network is learning. Decreasing loss and increasing accuracy indicate good learning progress.",
+      "theory": "Learning curve analysis using recent training history. Monitors convergence patterns and identifies potential issues like overfitting or underfitting.",
+      "math": "Loss trend = sign(L₃ - L₁) where Lᵢ are last 3 loss values. Accuracy trend = sign(A₃ - A₁) where Aᵢ are last 3 accuracy values. Positive = improving, negative = degrading.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Learning_curve",
+        "https://en.wikipedia.org/wiki/Convergence_analysis",
+        "https://en.wikipedia.org/wiki/Model_validation"
+      ]
+    },
+    "prediction_confidence": {
+      "title": "Prediction Confidence Assessment",
+      "explanation": "This estimates how confident the network is in its predictions based on training performance. Higher confidence means the network has learned reliable patterns from your preferences.",
+      "theory": "Confidence estimation based on training accuracy and data sufficiency. Combines model performance with training data quantity to assess prediction reliability.",
+      "math": "Confidence = f(accuracy, training_examples) where f is confidence function. High: accuracy > 0.8, Medium: accuracy > 0.6, Low: accuracy ≤ 0.6 or insufficient data.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Confidence_interval",
+        "https://en.wikipedia.org/wiki/Uncertainty_quantification",
+        "https://en.wikipedia.org/wiki/Statistical_significance"
+      ]
+    },
     "model_switcher": {
       "title": "Model Switcher",
-      "explanation": "Switch between a neural network (learns complex patterns) and a rule-based model (uses simple color rules).",
-      "theory": "Model comparison between parametric (neural network) and non-parametric (rule-based) approaches. Different complexity vs interpretability trade-offs.",
+      "explanation": "Switch between two different learning approaches: <strong>Neural Network</strong> (learns complex patterns through gradient descent) and <strong>Rule-Based (HSV)</strong> (uses simple color space rules). Each model has different strengths and learning characteristics.",
+      "theory": "Model comparison between parametric (neural network) and non-parametric (rule-based) approaches. Neural networks learn complex, non-linear decision boundaries, while rule-based models use interpretable color space heuristics.",
       "math": "Neural network: ŷ = f(x;θ) where θ are learned parameters. Rule-based: ŷ = Σᵢ wᵢ·ruleᵢ(x) where rules are predefined color heuristics.",
       "resources": [
         "https://en.wikipedia.org/wiki/Parametric_model",
@@ -169,9 +213,9 @@
     },
     "model_switched": {
       "title": "Model Changed",
-      "explanation": "You switched to a different type of model. Each has different strengths - neural networks learn complex patterns, rule-based models use simple color rules.",
-      "theory": "Model selection between different learning paradigms. Neural networks: high capacity, complex patterns. Rule-based: interpretable, simple heuristics.",
-      "math": "Neural network complexity: O(h²) parameters where h = hidden layer size. Rule-based: O(k) rules where k = number of color rules.",
+      "explanation": "You switched to a different learning model! <strong>Neural Network:</strong> Uses gradient descent to learn complex patterns. <strong>Rule-Based (HSV):</strong> Uses simple color space rules. Notice how the training insights and visualizations change to reflect the different learning approach.",
+      "theory": "Model selection between different learning paradigms. Neural networks: high capacity, complex patterns, gradient-based optimization. Rule-based: interpretable, simple heuristics, statistical learning.",
+      "math": "Neural network complexity: O(h²) parameters where h = hidden layer size. Rule-based: O(k) rules where k = number of color bins. Different optimization strategies: gradient descent vs statistical counting.",
       "resources": [
         "https://en.wikipedia.org/wiki/Model_selection",
         "https://en.wikipedia.org/wiki/Inductive_bias",
@@ -203,14 +247,25 @@
   },
   "concepts": {
     "neural_network": {
-      "title": "What is a Neural Network?",
-      "explanation": "A neural network is like a digital brain that learns patterns from examples. It has layers of 'neurons' that process information and make predictions.",
+      "title": "🧠 Neural Network Model",
+      "explanation": "A neural network is like a digital brain that learns complex patterns from examples. It has layers of 'neurons' that process information and make predictions through gradient descent optimization.",
       "theory": "Artificial neural networks are computational models inspired by biological neurons. They consist of interconnected nodes (neurons) organized in layers that process input data through weighted connections and activation functions.",
       "math": "For input x, output ŷ = f(x;θ) where θ are learnable parameters. Each layer: h = σ(W·x + b) where σ is activation function, W is weight matrix, b is bias vector.",
       "resources": [
         "https://en.wikipedia.org/wiki/Artificial_neural_network",
         "https://en.wikipedia.org/wiki/Deep_learning",
         "https://en.wikipedia.org/wiki/Connectionism"
+      ]
+    },
+    "rule_based_model": {
+      "title": "📊 Rule-Based (HSV) Model",
+      "explanation": "A rule-based model uses simple, interpretable rules based on HSV (Hue, Saturation, Value) color space. It learns your preferences by tracking which color bins you prefer most often.",
+      "theory": "Rule-based models use predefined heuristics and statistical patterns rather than learned parameters. They're more interpretable but may have limited capacity for complex patterns compared to neural networks.",
+      "math": "For color c, preference ŷ = Σᵢ wᵢ·binᵢ(c) where binᵢ(c) indicates if color c falls in bin i, and wᵢ is the learned preference weight for that bin.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Rule-based_system",
+        "https://en.wikipedia.org/wiki/HSV_color_space",
+        "https://en.wikipedia.org/wiki/Heuristic"
       ]
     },
     "training": {
@@ -266,6 +321,17 @@
         "https://en.wikipedia.org/wiki/Overfitting",
         "https://en.wikipedia.org/wiki/Regularization_(mathematics)",
         "https://en.wikipedia.org/wiki/Generalization_error"
+      ]
+    },
+    "model_comparison": {
+      "title": "🤖 Model Comparison",
+      "explanation": "<strong>Neural Network:</strong> Learns complex, non-linear patterns through gradient descent. Better for complex preferences but less interpretable. <strong>Rule-Based (HSV):</strong> Uses simple color space rules. More interpretable but may miss complex patterns. Try both to see the difference!",
+      "theory": "Different learning paradigms offer different trade-offs. Neural networks excel at complex pattern recognition but are 'black boxes.' Rule-based models are interpretable but may have limited expressiveness for complex relationships.",
+      "math": "Neural Network: O(h²) parameters, complex decision boundaries. Rule-Based: O(k) rules, linear combinations of color bins. Complexity vs interpretability trade-off.",
+      "resources": [
+        "https://en.wikipedia.org/wiki/Model_comparison",
+        "https://en.wikipedia.org/wiki/Interpretability",
+        "https://en.wikipedia.org/wiki/Computational_complexity"
       ]
     }
   }

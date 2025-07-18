@@ -40,44 +40,51 @@ header p {
 /* Model Switcher */
 #model-switcher {
     margin-top: 20px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
     backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .model-switch {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 25px;
     flex-wrap: wrap;
 }
 
 .model-switch label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 15px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    gap: 10px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: 2px solid transparent;
 }
 
 .model-switch label:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .model-switch input[type="radio"] {
     margin: 0;
     accent-color: #007bff;
+    transform: scale(1.2);
 }
 
 .model-switch input[type="radio"]:checked + span {
     color: #007bff;
-    font-weight: 600;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
 }
 
 /* Main content layout */
@@ -415,6 +422,17 @@ main {
     transform: translateY(-2px);
 }
 
+.insight-card.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.insight-card.clickable:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,123,255,0.2);
+    border-left-color: #0056b3;
+}
+
 .insight-card h5 {
     color: #2c3e50;
     margin-bottom: 10px;
@@ -583,8 +601,12 @@ footer a:hover {
 
 .explanation-content {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     gap: 15px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 10px;
+    scroll-behavior: smooth;
 }
 
 .explanation-bubble {
@@ -642,6 +664,16 @@ footer a:hover {
     color: #495057;
     font-size: 0.95rem;
     line-height: 1.5;
+}
+
+.bubble-text strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.bubble-text br + strong {
+    margin-top: 10px;
+    display: inline-block;
 }
 
 @keyframes slideIn {

@@ -229,28 +229,34 @@ class ColorPreferenceNN {
         // Check if switcher already exists
         if (document.getElementById('model-switcher')) return;
         
+        // Add switcher after the header description
         const header = document.querySelector('header');
+        const description = header.querySelector('p');
         const switcher = document.createElement('div');
         switcher.id = 'model-switcher';
+        switcher.className = 'model-switcher';
         switcher.innerHTML = `
             <div class="model-switch">
-                <label>
-                    <input type="radio" name="model" value="neural" checked> Neural Network
+                <label class="model-option">
+                    <input type="radio" name="model" value="neural" checked>
+                    <span class="model-label">🧠 Neural Network</span>
                 </label>
-                <label>
-                    <input type="radio" name="model" value="rule"> Rule-Based (HSV)
+                <label class="model-option">
+                    <input type="radio" name="model" value="rule">
+                    <span class="model-label">📊 Rule-Based (HSV)</span>
                 </label>
             </div>
         `;
         
-        header.appendChild(switcher);
+        // Insert after the description
+        header.insertBefore(switcher, description.nextSibling);
         
         // Add event listeners
         const radios = switcher.querySelectorAll('input[type="radio"]');
         radios.forEach(radio => {
             radio.addEventListener('change', (e) => {
                 this.useAlternativeModel = e.target.value === 'rule';
-                this.updateNetworkStatus(`Switched to ${this.useAlternativeModel ? 'Rule-Based' : 'Neural Network'} model`);
+                this.updateNetworkStatus(`Switched to ${this.useAlternativeModel ? 'Rule-Based (HSV)' : 'Neural Network'} model`);
                 
                 // Add model switch explanation
                 this.addExplanation('interactions', 'model_switched', 'interaction');
@@ -259,11 +265,20 @@ class ColorPreferenceNN {
                 this.trainingData = [];
                 this.trainingCount = 0;
                 this.trainingHistory = [];
+                this.weightHistory = [];
+                this.previousWeights = null;
+                
+                // Reset UI elements
                 this.updateStats();
                 this.updateTrainingInsights();
+                this.updateWeightTable();
+                this.updateWeightVisualization();
                 
                 // Disable inference until retrained
                 document.getElementById('start-inference').disabled = true;
+                
+                // Generate new colors
+                this.generateNewColors();
             });
         });
     }
@@ -304,6 +319,60 @@ class ColorPreferenceNN {
                 element.addEventListener('click', (e) => this.handleElementClick(e, selector));
             });
         });
+        
+        // Add specific handlers for insight cards
+        this.addInsightCardHandlers();
+        
+        // Add model comparison explanation on first model switch
+        this.addModelComparisonExplanation();
+    }
+
+    addModelComparisonExplanation() {
+        // Add explanation about model differences when user first switches
+        const modelSwitcher = document.getElementById('model-switcher');
+        if (modelSwitcher) {
+            const radios = modelSwitcher.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    // Add model comparison explanation after a short delay
+                    setTimeout(() => {
+                        this.addExplanation('concepts', 'model_comparison', 'concept');
+                    }, 1000);
+                });
+            });
+        }
+    }
+
+    addInsightCardHandlers() {
+        // Add click handlers for individual insight cards
+        const insightCards = document.querySelectorAll('.insight-card');
+        insightCards.forEach(card => {
+            card.classList.add('clickable');
+            card.addEventListener('click', (e) => this.handleInsightCardClick(e, card));
+        });
+    }
+
+    handleInsightCardClick(event, card) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Get the insight type from the card's content
+        const cardTitle = card.querySelector('h5').textContent;
+        let insightKey = '';
+        
+        if (cardTitle.includes('Color Sensitivity')) {
+            insightKey = 'color_sensitivity';
+        } else if (cardTitle.includes('Weight Changes')) {
+            insightKey = 'weight_changes';
+        } else if (cardTitle.includes('Learning Pattern')) {
+            insightKey = 'learning_pattern';
+        } else if (cardTitle.includes('Prediction Confidence')) {
+            insightKey = 'prediction_confidence';
+        }
+        
+        if (insightKey && this.explanations?.ui_elements?.[insightKey]) {
+            this.addExplanation('ui_elements', insightKey);
+        }
     }
 
     handleElementClick(event, selector) {
@@ -323,7 +392,8 @@ class ColorPreferenceNN {
             '#weight-table': 'weight_table',
             '#weight-canvas': 'weight_canvas',
             '.training-insights': 'training_insights',
-            '#model-switcher': 'model_switcher'
+            '#model-switcher': 'model_switcher',
+            '.insight-card': 'training_insights' // Fallback for insight cards
         };
         
         const key = selectorMap[selector];
@@ -335,8 +405,21 @@ class ColorPreferenceNN {
     addExplanation(category, key, type = 'ui') {
         if (!this.explanations?.[category]?.[key]) return;
         
+        // Check if this explanation was already shown recently to prevent duplicates
+        const recentExplanations = this.explanationHistory.slice(-3);
+        const isDuplicate = recentExplanations.some(exp => exp.category === category && exp.key === key);
+        
+        // Skip basic UI explanations if they were already shown
+        if (type === 'ui' && isDuplicate) return;
+        
         const explanation = this.explanations[category][key];
         const bubbleType = this.getBubbleType(type, category);
+        
+        // Add detailed math explanation for training interactions
+        let detailedExplanation = explanation.explanation;
+        if (category === 'interactions' && key === 'training_complete' && this.previousWeights) {
+            detailedExplanation = this.addWeightChangeDetails(explanation.explanation);
+        }
         
         const bubble = document.createElement('div');
         bubble.className = `explanation-bubble ${bubbleType}`;
@@ -345,12 +428,13 @@ class ColorPreferenceNN {
                 <span class="bubble-icon">${this.getBubbleIcon(bubbleType)}</span>
                 <span class="bubble-title">${explanation.title}</span>
             </div>
-            <div class="bubble-text">${explanation.explanation}</div>
+            <div class="bubble-text">${detailedExplanation}</div>
         `;
         
         const content = document.querySelector('.explanation-content');
         if (content) {
-            content.appendChild(bubble);
+            // Add to the beginning (which will appear at top due to flex-direction: column-reverse)
+            content.insertBefore(bubble, content.firstChild);
             
             // Add to history
             this.explanationHistory.push({ category, key, type });
@@ -360,8 +444,8 @@ class ColorPreferenceNN {
                 this.removeOldestExplanation();
             }
             
-            // Scroll to bottom
-            content.scrollTop = content.scrollHeight;
+            // Scroll to show new explanation (top in reversed flex)
+            content.scrollTop = 0;
         }
     }
 
@@ -393,7 +477,8 @@ class ColorPreferenceNN {
     removeOldestExplanation() {
         const content = document.querySelector('.explanation-content');
         if (content && content.children.length > 1) { // Keep at least the welcome message
-            content.removeChild(content.children[1]); // Remove first non-welcome bubble
+            // Remove the last child (oldest in reversed flex)
+            content.removeChild(content.lastChild);
             this.explanationHistory.shift();
         }
     }
@@ -405,7 +490,7 @@ class ColorPreferenceNN {
             const welcomeBubble = content.querySelector('.explanation-bubble.welcome');
             content.innerHTML = '';
             if (welcomeBubble) {
-                content.appendChild(welcomeBubble);
+                content.insertBefore(welcomeBubble, content.firstChild);
             }
             this.explanationHistory = [];
         }
@@ -462,9 +547,6 @@ class ColorPreferenceNN {
         if (this.isTraining) return;
         
         this.isTraining = true;
-        
-        // Add explanation for training interaction
-        this.addExplanation('interactions', 'color_preference_clicked', 'interaction');
         
         // Store previous weights for analysis
         this.previousWeights = this.getWeights();
@@ -595,30 +677,71 @@ class ColorPreferenceNN {
     }
 
     updateWeightTable() {
-        const weights = this.getWeights();
-        if (!weights) return;
-        
-        // Update weight table for first layer (16 neurons now)
-        for (let i = 0; i < 8; i++) {
-            const redWeight = weights[i];
-            const greenWeight = weights[i + 16];
-            const blueWeight = weights[i + 32];
+        if (this.useAlternativeModel) {
+            // Update weight table for rule-based model
+            this.updateRuleBasedWeightTable();
+        } else {
+            // Update weight table for neural network
+            const weights = this.getWeights();
+            if (!weights) return;
             
-            document.getElementById(`w-r-${i + 1}`).textContent = redWeight.toFixed(3);
-            document.getElementById(`w-g-${i + 1}`).textContent = greenWeight.toFixed(3);
-            document.getElementById(`w-b-${i + 1}`).textContent = blueWeight.toFixed(3);
+            // Update weight table for first layer (16 neurons now)
+            for (let i = 0; i < 8; i++) {
+                const redWeight = weights[i];
+                const greenWeight = weights[i + 16];
+                const blueWeight = weights[i + 32];
+                
+                document.getElementById(`w-r-${i + 1}`).textContent = redWeight.toFixed(3);
+                document.getElementById(`w-g-${i + 1}`).textContent = greenWeight.toFixed(3);
+                document.getElementById(`w-b-${i + 1}`).textContent = blueWeight.toFixed(3);
+                
+                // Color code the weights
+                this.colorCodeWeight(`w-r-${i + 1}`, redWeight);
+                this.colorCodeWeight(`w-g-${i + 1}`, greenWeight);
+                this.colorCodeWeight(`w-b-${i + 1}`, blueWeight);
+            }
+            
+            // Store weight history
+            this.weightHistory.push({
+                weights: Array.from(weights),
+                step: this.trainingCount
+            });
+        }
+    }
+
+    updateRuleBasedWeightTable() {
+        if (!this.alternativeModel) return;
+        
+        // Calculate HSV preference strengths
+        const hueStrength = this.alternativeModel.huePreferences.size / 12; // Normalize to 0-1
+        const satStrength = this.alternativeModel.saturationPreferences.size / 4;
+        const valStrength = this.alternativeModel.valuePreferences.size / 4;
+        
+        // Update table with HSV information
+        for (let i = 0; i < 8; i++) {
+            let hueValue, satValue, valValue;
+            
+            if (i < 4) {
+                // First 4 neurons show hue preferences
+                hueValue = hueStrength * (1 - i * 0.2);
+                satValue = satStrength * 0.5;
+                valValue = valStrength * 0.5;
+            } else {
+                // Last 4 neurons show saturation/value preferences
+                hueValue = hueStrength * 0.3;
+                satValue = satStrength * (1 - (i - 4) * 0.2);
+                valValue = valStrength * (1 - (i - 4) * 0.2);
+            }
+            
+            document.getElementById(`w-r-${i + 1}`).textContent = hueValue.toFixed(3);
+            document.getElementById(`w-g-${i + 1}`).textContent = satValue.toFixed(3);
+            document.getElementById(`w-b-${i + 1}`).textContent = valValue.toFixed(3);
             
             // Color code the weights
-            this.colorCodeWeight(`w-r-${i + 1}`, redWeight);
-            this.colorCodeWeight(`w-g-${i + 1}`, greenWeight);
-            this.colorCodeWeight(`w-b-${i + 1}`, blueWeight);
+            this.colorCodeWeight(`w-r-${i + 1}`, hueValue);
+            this.colorCodeWeight(`w-g-${i + 1}`, satValue);
+            this.colorCodeWeight(`w-b-${i + 1}`, valValue);
         }
-        
-        // Store weight history
-        this.weightHistory.push({
-            weights: Array.from(weights),
-            step: this.trainingCount
-        });
     }
 
     colorCodeWeight(elementId, weight) {
@@ -635,11 +758,73 @@ class ColorPreferenceNN {
     }
 
     updateTrainingInsights() {
-        this.updateColorSensitivity();
-        this.updateWeightChanges();
-        this.updateLearningPattern();
-        this.updatePredictionConfidence();
-        this.updateTrainingRecommendations();
+        if (this.useAlternativeModel) {
+            // Update insights for rule-based model
+            this.updateRuleBasedInsights();
+        } else {
+            // Update insights for neural network model
+            this.updateColorSensitivity();
+            this.updateWeightChanges();
+            this.updateLearningPattern();
+            this.updatePredictionConfidence();
+            this.updateTrainingRecommendations();
+        }
+        
+        // Add explanations for significant changes in insights
+        this.addInsightExplanations();
+    }
+
+    updateRuleBasedInsights() {
+        // Update color sensitivity for rule-based model
+        this.updateRuleBasedColorSensitivity();
+        
+        // Update learning pattern for rule-based model
+        this.updateRuleBasedLearningPattern();
+        
+        // Update prediction confidence for rule-based model
+        this.updateRuleBasedPredictionConfidence();
+        
+        // Update training recommendations for rule-based model
+        this.updateRuleBasedTrainingRecommendations();
+    }
+
+    addInsightExplanations() {
+        // Add explanations for insight changes if they're significant
+        if (this.trainingCount > 2) { // Only after some training
+            // Check if weight changes are significant
+            if (this.previousWeights) {
+                const currentWeights = this.getWeights();
+                if (currentWeights) {
+                    const avgChange = currentWeights.map((w, i) => Math.abs(w - this.previousWeights[i]))
+                        .reduce((a, b) => a + b, 0) / currentWeights.length;
+                    
+                    if (avgChange > 0.05) { // Significant weight change
+                        this.addExplanation('ui_elements', 'weight_changes');
+                    }
+                }
+            }
+            
+            // Check if learning pattern shows improvement
+            if (this.trainingHistory.length >= 3) {
+                const recentLosses = this.trainingHistory.slice(-3).map(h => h.loss);
+                const recentAccuracies = this.trainingHistory.slice(-3).map(h => h.accuracy);
+                
+                const lossImproving = recentLosses[2] < recentLosses[0];
+                const accuracyImproving = recentAccuracies[2] > recentAccuracies[0];
+                
+                if (lossImproving && accuracyImproving) {
+                    this.addExplanation('ui_elements', 'learning_pattern');
+                }
+            }
+            
+            // Check if prediction confidence is high enough
+            if (this.trainingCount >= this.minTrainingExamples * 2) {
+                const recentAccuracy = this.trainingHistory[this.trainingHistory.length - 1]?.accuracy || 0;
+                if (recentAccuracy > 0.7) {
+                    this.addExplanation('ui_elements', 'prediction_confidence');
+                }
+            }
+        }
     }
 
     updateTrainingRecommendations() {
@@ -744,6 +929,114 @@ class ColorPreferenceNN {
         `;
     }
 
+    updateRuleBasedColorSensitivity() {
+        if (!this.alternativeModel || this.alternativeModel.trainingCount < 2) {
+            document.getElementById('color-sensitivity').innerHTML = `
+                <strong>Analyzing...</strong><br>
+                <small>Need more training data</small>
+            `;
+            return;
+        }
+        
+        // Calculate sensitivity based on HSV preferences
+        const hueSensitivity = this.alternativeModel.huePreferences.size;
+        const satSensitivity = this.alternativeModel.saturationPreferences.size;
+        const valSensitivity = this.alternativeModel.valuePreferences.size;
+        
+        const sensitivities = [
+            { name: 'Hue', value: hueSensitivity, icon: '🎨' },
+            { name: 'Saturation', value: satSensitivity, icon: '🌈' },
+            { name: 'Brightness', value: valSensitivity, icon: '💡' }
+        ];
+        
+        // Sort by sensitivity
+        sensitivities.sort((a, b) => b.value - a.value);
+        
+        const dominant = sensitivities[0];
+        const secondary = sensitivities[1];
+        
+        document.getElementById('color-sensitivity').innerHTML = `
+            <strong>${dominant.icon} ${dominant.name}</strong><br>
+            <small>Most sensitive to ${dominant.name.toLowerCase()} (${dominant.value} bins)</small><br>
+            <small>Also learning ${secondary.name.toLowerCase()} (${secondary.value} bins)</small>
+        `;
+    }
+
+    updateRuleBasedLearningPattern() {
+        if (!this.alternativeModel || this.alternativeModel.trainingCount < 4) {
+            document.getElementById('learning-pattern').innerHTML = `
+                <strong>Learning...</strong><br>
+                <small>Building color rules</small>
+            `;
+            return;
+        }
+        
+        const totalBins = this.alternativeModel.huePreferences.size + 
+                         this.alternativeModel.saturationPreferences.size + 
+                         this.alternativeModel.valuePreferences.size;
+        
+        let pattern = '';
+        if (totalBins < 6) {
+            pattern = '<strong>Building Rules</strong><br><small>Learning basic color patterns</small>';
+        } else if (totalBins < 12) {
+            pattern = '<strong>Refining Rules</strong><br><small>Improving color understanding</small>';
+        } else {
+            pattern = '<strong>Advanced Rules</strong><br><small>Complex color preference patterns</small>';
+        }
+        
+        document.getElementById('learning-pattern').innerHTML = pattern;
+    }
+
+    updateRuleBasedPredictionConfidence() {
+        if (!this.alternativeModel || this.alternativeModel.trainingCount < 2) {
+            document.getElementById('prediction-confidence').innerHTML = `
+                <strong>Low</strong><br>
+                <small>Need more training data</small>
+            `;
+            return;
+        }
+        
+        const totalBins = this.alternativeModel.huePreferences.size + 
+                         this.alternativeModel.saturationPreferences.size + 
+                         this.alternativeModel.valuePreferences.size;
+        
+        let confidence = 'Low';
+        if (totalBins >= 8) confidence = 'Medium';
+        if (totalBins >= 15) confidence = 'High';
+        
+        let recommendation = '';
+        if (this.alternativeModel.trainingCount < 10) {
+            recommendation = '<br><small>💡 Train more for better rules</small>';
+        } else if (totalBins < 8) {
+            recommendation = '<br><small>💡 Try more diverse colors</small>';
+        } else {
+            recommendation = '<br><small>✅ Rules performing well!</small>';
+        }
+        
+        document.getElementById('prediction-confidence').innerHTML = `
+            <strong>${confidence}</strong><br>
+            <small>Based on ${this.alternativeModel.trainingCount} examples</small>
+            ${recommendation}
+        `;
+    }
+
+    updateRuleBasedTrainingRecommendations() {
+        // Update weight changes for rule-based model
+        const totalBins = this.alternativeModel ? 
+            (this.alternativeModel.huePreferences.size + 
+             this.alternativeModel.saturationPreferences.size + 
+             this.alternativeModel.valuePreferences.size) : 0;
+        
+        let activity = 'Low';
+        if (totalBins > 5) activity = 'Medium';
+        if (totalBins > 10) activity = 'High';
+        
+        document.getElementById('weight-changes').innerHTML = `
+            <strong>${activity}</strong><br>
+            <small>${totalBins} color bins learned</small>
+        `;
+    }
+
     async startInferenceMode() {
         // Switch to inference phase
         document.getElementById('training-phase').classList.remove('active');
@@ -841,7 +1134,7 @@ class ColorPreferenceNN {
     }
 
     updateWeightVisualization() {
-        if (!this.model || !this.canvas) return;
+        if (!this.canvas) return;
         
         const ctx = this.ctx;
         const canvas = this.canvas;
@@ -849,34 +1142,128 @@ class ColorPreferenceNN {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Get weights from the first layer
-        const weights = this.model.layers[0].getWeights()[0].dataSync();
-        
-        // Draw weight visualization with smaller cells for more weights
-        const cellSize = 15; // Smaller cells
-        const padding = 10;
-        const cols = Math.ceil(Math.sqrt(weights.length));
-        const rows = Math.ceil(weights.length / cols);
-        
-        for (let i = 0; i < weights.length; i++) {
-            const row = Math.floor(i / cols);
-            const col = i % cols;
-            const x = padding + col * cellSize;
-            const y = padding + row * cellSize;
+        if (this.useAlternativeModel) {
+            // Visualize rule-based model
+            this.updateRuleBasedWeightVisualization(ctx, canvas);
+        } else {
+            // Visualize neural network weights
+            if (!this.model) return;
             
-            // Normalize weight to 0-1 range for color intensity
-            const weight = weights[i];
-            const intensity = Math.max(0, Math.min(1, (weight + 1) / 2));
+            const weights = this.model.layers[0].getWeights()[0].dataSync();
             
-            ctx.fillStyle = `rgba(0, 123, 255, ${intensity})`;
-            ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+            // Draw weight visualization with smaller cells for more weights
+            const cellSize = 15; // Smaller cells
+            const padding = 10;
+            const cols = Math.ceil(Math.sqrt(weights.length));
+            const rows = Math.ceil(weights.length / cols);
+            
+            for (let i = 0; i < weights.length; i++) {
+                const row = Math.floor(i / cols);
+                const col = i % cols;
+                const x = padding + col * cellSize;
+                const y = padding + row * cellSize;
+                
+                // Normalize weight to 0-1 range for color intensity
+                const weight = weights[i];
+                const intensity = Math.max(0, Math.min(1, (weight + 1) / 2));
+                
+                ctx.fillStyle = `rgba(0, 123, 255, ${intensity})`;
+                ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+            }
+            
+            // Add labels
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Layer 1 Weights (${weights.length} total)`, canvas.width / 2, canvas.height - 10);
+        }
+    }
+
+    updateRuleBasedWeightVisualization(ctx, canvas) {
+        if (!this.alternativeModel) return;
+        
+        const padding = 20;
+        const cellSize = 25;
+        const cols = 8;
+        const rows = 3;
+        
+        // Draw HSV preference visualization
+        const hueBins = this.alternativeModel.huePreferences.size;
+        const satBins = this.alternativeModel.saturationPreferences.size;
+        const valBins = this.alternativeModel.valuePreferences.size;
+        
+        // Draw hue preferences (top row)
+        for (let i = 0; i < cols; i++) {
+            const x = padding + i * cellSize;
+            const y = padding;
+            const intensity = i < hueBins ? 0.8 : 0.2;
+            
+            ctx.fillStyle = `rgba(255, 0, 0, ${intensity})`; // Red for hue
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+        }
+        
+        // Draw saturation preferences (middle row)
+        for (let i = 0; i < cols; i++) {
+            const x = padding + i * cellSize;
+            const y = padding + cellSize;
+            const intensity = i < satBins ? 0.8 : 0.2;
+            
+            ctx.fillStyle = `rgba(0, 255, 0, ${intensity})`; // Green for saturation
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+        }
+        
+        // Draw value preferences (bottom row)
+        for (let i = 0; i < cols; i++) {
+            const x = padding + i * cellSize;
+            const y = padding + 2 * cellSize;
+            const intensity = i < valBins ? 0.8 : 0.2;
+            
+            ctx.fillStyle = `rgba(0, 0, 255, ${intensity})`; // Blue for value
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
         }
         
         // Add labels
         ctx.fillStyle = '#333';
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(`Layer 1 Weights (${weights.length} total)`, canvas.width / 2, canvas.height - 10);
+        ctx.fillText('HSV Rule Visualization', canvas.width / 2, canvas.height - 10);
+        ctx.fillText('Red=Hue, Green=Saturation, Blue=Value', canvas.width / 2, canvas.height - 25);
+    }
+
+    addWeightChangeDetails(baseExplanation) {
+        if (!this.previousWeights || !this.model) return baseExplanation;
+        
+        const currentWeights = this.getWeights();
+        if (!currentWeights) return baseExplanation;
+        
+        // Calculate weight changes
+        const weightChanges = currentWeights.map((w, i) => w - this.previousWeights[i]);
+        const avgChange = weightChanges.reduce((a, b) => a + Math.abs(b), 0) / weightChanges.length;
+        const maxChange = Math.max(...weightChanges.map(w => Math.abs(w)));
+        
+        // Find most changed weights
+        const maxChangeIndex = weightChanges.findIndex(w => Math.abs(w) === maxChange);
+        const layerSize = 16; // First layer has 16 neurons
+        const inputIndex = Math.floor(maxChangeIndex / layerSize);
+        const neuronIndex = maxChangeIndex % layerSize;
+        const inputNames = ['Red', 'Green', 'Blue'];
+        const inputName = inputNames[inputIndex];
+        
+        // Calculate gradient magnitude
+        const gradientMagnitude = Math.sqrt(weightChanges.reduce((sum, w) => sum + w * w, 0));
+        
+        const mathDetails = `
+            <br><br><strong>📊 Weight Analysis:</strong>
+            <br>• Average weight change: ${avgChange.toFixed(4)}
+            <br>• Largest change: ${maxChange.toFixed(4)} (${inputName} → Neuron ${neuronIndex + 1})
+            <br>• Gradient magnitude: ${gradientMagnitude.toFixed(4)}
+            <br><br><strong>🧮 Math:</strong>
+            <br>Δw = w_new - w_old = ${maxChange.toFixed(4)}
+            <br>Learning rate effect: Δw ∝ -α∇L
+            <br>Where α = 0.005 (learning rate), ∇L = gradient of loss
+        `;
+        
+        return baseExplanation + mathDetails;
     }
 }
 
